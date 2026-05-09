@@ -1,0 +1,57 @@
+---
+import Brand from '@/components/Brand.astro';
+import { getSession } from '@/lib/auth';
+
+export const prerender = false;
+const session = await getSession(Astro.cookies);
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>NOMOI Surface — keeps your brand pages alive</title>
+<meta name="description" content="A manifest-driven brand-as-a-service. You add your products. We keep the videos, copy, and CapCut kits refreshing as your scope changes." />
+</head>
+<body>
+<Brand authedEmail={session?.user.email ?? null} />
+
+<main style="max-width:980px;margin:0 auto;padding:80px 36px 80px">
+  <p style="font-family:var(--mono);font-size:12px;letter-spacing:0.16em;color:var(--gold);margin:0 0 24px">SURFACE · BY NOMOI</p>
+  <h1 style="font-family:var(--serif);font-size:64px;font-weight:400;line-height:1.05;letter-spacing:-0.02em;margin:0 0 28px;max-width:880px">
+    Your landing page is doing nothing. <em style="font-style:normal;color:var(--gold)">Mine has eleven product cards, each with a video that auto-updates when scope changes.</em>
+  </h1>
+  <p style="font-family:var(--sans);font-size:18px;line-height:1.7;color:var(--text-mid);max-width:680px;font-weight:300;margin:0 0 40px">
+    Surface is the system that keeps NOMOI's eleven product cards alive — videos, copy, CapCut kits, weekly bawa rotation. We're opening it up. Add your products, we keep the surfaces refreshing.
+  </p>
+
+  <div style="display:flex;gap:14px;margin-bottom:80px">
+    <a href="/login" style="background:var(--gold);color:#0c0a08;padding:14px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.02em">
+      Try the dashboard →
+    </a>
+    <a href="https://nomoi.ai" target="_blank" rel="noopener" style="border:0.5px solid var(--border-s);color:var(--text-mid);padding:14px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px">
+      See it on nomoi.ai
+    </a>
+  </div>
+
+  <section style="display:grid;grid-template-columns:repeat(3, 1fr);gap:32px;margin-bottom:80px">
+    <div>
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">SOLO · $99/QTR</p>
+      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 3 products. One refresh credit per product per month.</p>
+    </div>
+    <div>
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">OPERATOR · $299/QTR</p>
+      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 10 products. Unlimited refreshes. Custom subdomain.</p>
+    </div>
+    <div>
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">STUDIO · $999/QTR</p>
+      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 50 products. Custom palette and type. Custom domain.</p>
+    </div>
+  </section>
+
+  <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--text-muted);max-width:680px;line-height:1.6">
+    First ten customers grandfathered at half the launch price, forever.
+  </p>
+</main>
+</body>
+</html>

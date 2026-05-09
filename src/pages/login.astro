@@ -1,0 +1,80 @@
+---
+import Brand from '@/components/Brand.astro';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '@/lib/supabase';
+import { getSession } from '@/lib/auth';
+
+export const prerender = false;
+const session = await getSession(Astro.cookies);
+if (session) return Astro.redirect('/dashboard');
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign in — NOMOI Surface</title>
+</head>
+<body>
+<Brand />
+
+<main style="max-width:480px;margin:0 auto;padding:80px 36px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 18px">SURFACE · SIGN IN</p>
+  <h1 style="font-family:var(--serif);font-size:36px;font-weight:400;line-height:1.15;margin:0 0 22px">Send a magic link.</h1>
+  <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0 0 32px">
+    No passwords. Drop your email and we send a one-time link that signs you in for thirty days.
+  </p>
+
+  <form id="magic-form" style="display:flex;flex-direction:column;gap:14px">
+    <input
+      id="email" type="email" required autocomplete="email"
+      placeholder="you@yourdomain.com"
+      style="background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:14px 18px;color:var(--text);font-family:var(--mono);font-size:14px;outline:none"
+    />
+    <button type="submit"
+      style="background:var(--gold);color:#0c0a08;border:none;padding:14px 18px;border-radius:8px;font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.02em">
+      Send link →
+    </button>
+  </form>
+  <p id="msg" style="font-family:var(--mono);font-size:12px;color:var(--text-muted);margin-top:18px;min-height:1em"></p>
+
+  <div style="margin-top:48px;padding-top:24px;border-top:0.5px solid var(--border)">
+    <button id="google-btn" type="button"
+      style="width:100%;background:transparent;border:0.5px solid var(--border-s);color:var(--text-mid);padding:14px 18px;border-radius:8px;font-family:var(--mono);font-size:13px;cursor:pointer">
+      Continue with Google
+    </button>
+  </div>
+</main>
+
+<script is:inline define:vars={{ supabaseUrl: PUBLIC_SUPABASE_URL, anonKey: PUBLIC_SUPABASE_ANON_KEY }}>
+  // Inline the keys at SSR time so we never ship them as a separate API.
+  document.getElementById('magic-form').addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const msg = document.getElementById('msg');
+    msg.textContent = 'sending…';
+    try {
+      const r = await fetch(`${supabaseUrl}/auth/v1/otp`, {
+        method: 'POST',
+        headers: { apikey: anonKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, options: { emailRedirectTo: `${location.origin}/auth/callback` } }),
+      });
+      if (r.ok) {
+        msg.textContent = 'check your inbox. the link signs you in.';
+      } else {
+        const err = await r.text();
+        msg.textContent = `failed: ${err.slice(0, 120)}`;
+      }
+    } catch (e) {
+      msg.textContent = `network error: ${e.message}`;
+    }
+  });
+
+  document.getElementById('google-btn').addEventListener('click', () => {
+    const u = new URL(`${supabaseUrl}/auth/v1/authorize`);
+    u.searchParams.set('provider', 'google');
+    u.searchParams.set('redirect_to', `${location.origin}/auth/callback`);
+    location.href = u.toString();
+  });
+</script>
+</body>
+</html>

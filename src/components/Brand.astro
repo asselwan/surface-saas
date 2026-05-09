@@ -1,0 +1,61 @@
+---
+interface Props {
+  authedEmail?: string | null;
+}
+const { authedEmail = null } = Astro.props as Props;
+---
+<style is:global>
+  :root {
+    --bg: #0c0a08;
+    --bg2: #161411;
+    --bg3: #1e1b16;
+    --text: #f4f1ea;
+    --text-mid: #c8c0b0;
+    --text-muted: #a09888;
+    --text-faint: #6b665c;
+    --border: rgba(244,241,234,0.08);
+    --border-s: rgba(244,241,234,0.14);
+    --gold: #c4976b;
+    --gold-bright: #d4aa7e;
+    --teal: #5bbfab;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Fraunces", Georgia, serif;
+    --sans: "IBM Plex Sans", -apple-system, sans-serif;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+  rel="stylesheet"
+/>
+<nav style="display:flex;justify-content:space-between;align-items:center;padding:24px 36px;border-bottom:0.5px solid var(--border)">
+  <div style="display:flex;align-items:baseline;gap:10px">
+    <a href="/" style="font-family:var(--sans);font-weight:900;font-size:16px;letter-spacing:0.16em;text-decoration:none;color:var(--text)">NOMOI</a>
+    <span style="font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.12em">SURFACE</span>
+  </div>
+  <div style="display:flex;gap:18px;align-items:center;font-family:var(--mono);font-size:11px">
+    {authedEmail ? (
+      <>
+        <a href="/dashboard" style="color:var(--text-muted);text-decoration:none">dashboard</a>
+        <a href="/auth/logout" style="color:var(--text-faint);text-decoration:none">sign out</a>
+      </>
+    ) : (
+      <>
+        <a href="/" style="color:var(--text-muted);text-decoration:none">how it works</a>
+        <a href="/login" style="background:var(--gold);color:#0c0a08;padding:8px 18px;border-radius:6px;text-decoration:none;font-weight:500">sign in</a>
+      </>
+    )}
+  </div>
+</nav>

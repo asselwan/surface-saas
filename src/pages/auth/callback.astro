@@ -1,0 +1,62 @@
+---
+import { setSessionCookie, ensureAccount } from '@/lib/auth';
+import { getServerClient } from '@/lib/supabase';
+
+export const prerender = false;
+
+// Supabase magic-link / OAuth flows redirect to this URL with an
+// access_token in the URL fragment. We can't read fragments server-side,
+// so client JS posts the token back. Two-leg flow:
+//   1. SSR: render a minimal page with a script that reads the fragment
+//      and re-loads the page with ?token=... in the query string.
+//   2. SSR (second leg): validate the token via supabase.auth.getUser(),
+//      bootstrap the account row if needed, set the cookie, redirect
+//      to /dashboard.
+
+const url = Astro.url;
+const queryToken = url.searchParams.get('token');
+
+if (queryToken) {
+  const client = getServerClient(Astro.cookies);
+  const { data, error } = await client.auth.getUser(queryToken);
+  if (!error && data.user) {
+    setSessionCookie(Astro.cookies, queryToken);
+    try {
+      await ensureAccount(Astro.cookies, { id: data.user.id, email: data.user.email ?? '' });
+    } catch (err) {
+      console.error('[auth/callback] account bootstrap failed', err);
+    }
+    return Astro.redirect('/dashboard');
+  }
+  return Astro.redirect('/login?error=invalid_token');
+}
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Signing you in…</title>
+<style>
+  body { background:#0c0a08; color:#f4f1ea; font-family:"IBM Plex Mono",monospace; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0 }
+</style>
+</head>
+<body>
+<div>Signing you in…</div>
+<script is:inline>
+  // Supabase puts the access_token in URL fragment. Pull it out and
+  // re-hit this page with the token as a query param so the SSR leg
+  // can validate + cookie-set.
+  (function() {
+    const hash = window.location.hash.slice(1);
+    const params = new URLSearchParams(hash);
+    const token = params.get('access_token');
+    if (token) {
+      const next = `${window.location.pathname}?token=${encodeURIComponent(token)}`;
+      window.location.replace(next);
+    } else {
+      window.location.replace('/login?error=no_token');
+    }
+  })();
+</script>
+</body>
+</html>

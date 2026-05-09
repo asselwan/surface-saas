@@ -1,0 +1,77 @@
+---
+import Brand from '@/components/Brand.astro';
+import { getSession } from '@/lib/auth';
+import { getServerClient } from '@/lib/supabase';
+
+export const prerender = false;
+const session = await getSession(Astro.cookies);
+if (!session) return Astro.redirect('/login');
+
+const client = getServerClient(Astro.cookies);
+const accountId = session.account?.id ?? null;
+const products = accountId
+  ? (await client
+      .schema('surface_saas')
+      .from('products')
+      .select('id, key, name, tagline, status, sort_order, visible')
+      .eq('account_id', accountId)
+      .order('sort_order', { ascending: true })).data ?? []
+  : [];
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Dashboard — NOMOI Surface</title>
+</head>
+<body>
+<Brand authedEmail={session.user.email} />
+
+<main style="max-width:1080px;margin:0 auto;padding:48px 36px 80px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">
+    SURFACE · {session.account?.plan?.toUpperCase() ?? 'SOLO'} · {session.user.email}
+  </p>
+  <h1 style="font-family:var(--serif);font-size:42px;font-weight:400;line-height:1.1;margin:0 0 14px">Your products</h1>
+  <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);font-weight:300;margin:0 0 36px">
+    Add a product, drop a manifest, and Surface keeps the videos and copy alive. The first refresh runs about ten minutes after you add it.
+  </p>
+
+  {products.length === 0 ? (
+    <div style="border:0.5px dashed var(--border-s);border-radius:12px;padding:48px;text-align:center">
+      <p style="font-family:var(--mono);font-size:12px;letter-spacing:0.12em;color:var(--text-faint);margin:0 0 16px">EMPTY</p>
+      <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--text-muted);margin:0 0 24px">
+        Nothing yet. Add your first product.
+      </p>
+      <a href="/dashboard/new" style="background:var(--gold);color:#0c0a08;padding:12px 24px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500">
+        Add a product →
+      </a>
+    </div>
+  ) : (
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px">
+      {products.map((p) => (
+        <article style="background:var(--bg2);border:0.5px solid var(--border-s);border-radius:12px;padding:24px">
+          <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 8px">
+            {p.status?.toUpperCase()} · {p.key}
+          </p>
+          <h3 style="font-family:var(--serif);font-size:22px;font-weight:400;margin:0 0 8px">{p.name}</h3>
+          <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);font-weight:300;margin:0 0 16px;min-height:2em">{p.tagline ?? '—'}</p>
+          <a href={`/dashboard/products/${p.id}`} style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:0.5px solid rgba(196,151,107,0.4);padding-bottom:1px">
+            Edit →
+          </a>
+        </article>
+      ))}
+    </div>
+  )}
+
+  {!session.account && (
+    <div style="margin-top:48px;padding:24px;background:rgba(196,151,107,0.08);border-radius:12px">
+      <p style="font-family:var(--mono);font-size:11px;color:var(--gold);margin:0 0 8px;letter-spacing:0.12em">SETUP</p>
+      <p style="font-family:var(--sans);font-size:14px;color:var(--text);margin:0">
+        Account row missing — refresh the page to bootstrap.
+      </p>
+    </div>
+  )}
+</main>
+</body>
+</html>
