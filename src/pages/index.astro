@@ -5,10 +5,10 @@ import { getSession } from '@/lib/auth';
 
 export const prerender = false;
 const session = await getSession(Astro.cookies);
-const STORAGE = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos';
-// Real Surface-treated NOMOI product video for the "after" half of the slider.
-const afterVideoUrl = `${STORAGE}/cogwellness-v3.mp4`;
-const afterPosterUrl = `${STORAGE}/cogwellness-v3.jpg`;
+// "After" is the live nomoi.ai homepage — embedded so the cursor moves
+// naturally over the actual ambient + cursor-following motion. The page
+// renders its real product grid, motion fingerprints, hover reveal.
+const afterUrl = 'https://nomoi.ai/';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -55,13 +55,12 @@ const afterPosterUrl = `${STORAGE}/cogwellness-v3.jpg`;
       Same product. <em style="font-style:italic;color:var(--gold)">Before</em> Surface, and <em style="font-style:italic;color:var(--gold)">after</em>.
     </h2>
     <BeforeAfter
-      afterUrl={afterVideoUrl}
-      posterAfter={afterPosterUrl}
+      afterUrl={afterUrl}
       beforeName="Your Product"
       beforeTagline="The leading platform for modern teams. Get started today and unlock your potential."
     />
     <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:18px 0 0;text-align:center;letter-spacing:0.04em">
-      Real example on the right: a NOMOI product page that Surface refreshes every week.
+      The right side is nomoi.ai itself, live. Move your cursor across it.
     </p>
   </section>
 
