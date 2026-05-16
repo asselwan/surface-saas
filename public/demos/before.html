@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your Product — The Leading Platform for Modern Teams</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: #ffffff;
+    color: #1e1e1e;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    line-height: 1.55;
+  }
+  a { color: inherit; text-decoration: none; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 32px; }
+
+  /* Nav */
+  nav {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 32px; border-bottom: 1px solid #e8e8e3;
+    position: sticky; top: 0; background: rgba(255,255,255,0.95); z-index: 10;
+  }
+  nav .logo { font-weight: 700; font-size: 16px; letter-spacing: -0.01em; }
+  nav .links { display: flex; gap: 26px; font-size: 13px; color: #6c6c66; }
+  nav .cta { background: #1e1e1e; color: #fff; padding: 8px 18px; border-radius: 6px; font-size: 13px; }
+
+  /* Hero */
+  .hero { padding: 72px 32px 80px; }
+  .hero .eyebrow { font-size: 11px; letter-spacing: 0.18em; color: #9c9c95; font-weight: 500; margin-bottom: 18px; }
+  .hero h1 { font-size: 52px; font-weight: 600; line-height: 1.05; letter-spacing: -0.02em; color: #101010; margin: 0 0 22px; max-width: 740px; }
+  .hero p { font-size: 17px; color: #5b5b54; max-width: 580px; margin: 0 0 28px; }
+  .hero .cta-row { display: flex; gap: 12px; }
+  .hero .btn-primary { background: #1e1e1e; color: #fff; padding: 13px 26px; border-radius: 6px; font-size: 14px; font-weight: 500; }
+  .hero .btn-secondary { background: #fff; color: #1e1e1e; padding: 13px 26px; border-radius: 6px; font-size: 14px; border: 1px solid #d8d8d2; }
+
+  /* Logos strip */
+  .logos { padding: 32px 32px 48px; border-top: 1px solid #f0f0eb; border-bottom: 1px solid #f0f0eb; background: #fafaf7; }
+  .logos .label { font-size: 11px; letter-spacing: 0.18em; color: #9c9c95; text-align: center; margin-bottom: 22px; }
+  .logos .row { display: flex; justify-content: space-around; align-items: center; flex-wrap: wrap; gap: 28px; }
+  .logos .row span { font-size: 18px; font-weight: 600; color: #c2c2bb; letter-spacing: -0.01em; }
+
+  /* Features */
+  .features { padding: 80px 32px; }
+  .features h2 { font-size: 36px; font-weight: 600; line-height: 1.1; color: #101010; margin: 0 0 14px; max-width: 600px; }
+  .features .sub { font-size: 15px; color: #6c6c66; margin: 0 0 48px; max-width: 580px; }
+  .features .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+  .features .card {
+    background: #fff; border: 1px solid #ececec; border-radius: 8px; padding: 28px 24px;
+  }
+  .features .card .icon { width: 32px; height: 32px; background: #ececec; border-radius: 6px; margin-bottom: 16px; }
+  .features .card h3 { font-size: 16px; font-weight: 600; margin: 0 0 8px; }
+  .features .card p { font-size: 13px; color: #6c6c66; margin: 0; }
+
+  /* Testimonial */
+  .testimonial { background: #f6f6f4; padding: 72px 32px; }
+  .testimonial blockquote { font-size: 22px; line-height: 1.4; max-width: 720px; margin: 0 auto 24px; color: #1e1e1e; font-weight: 400; font-style: italic; text-align: center; }
+  .testimonial .author { text-align: center; font-size: 13px; color: #6c6c66; }
+
+  /* Pricing */
+  .pricing { padding: 80px 32px; }
+  .pricing h2 { font-size: 32px; font-weight: 600; text-align: center; margin: 0 0 12px; }
+  .pricing .sub { font-size: 14px; color: #6c6c66; text-align: center; margin: 0 0 48px; }
+  .pricing .row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .pricing .card { border: 1px solid #ececec; border-radius: 8px; padding: 32px 24px; background: #fff; }
+  .pricing .card .name { font-size: 13px; color: #6c6c66; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 14px; }
+  .pricing .card .price { font-size: 32px; font-weight: 600; margin-bottom: 18px; }
+  .pricing .card .price small { font-size: 13px; color: #6c6c66; font-weight: 400; }
+  .pricing .card ul { padding: 0; margin: 0; list-style: none; }
+  .pricing .card li { padding: 8px 0; font-size: 13px; color: #5b5b54; border-top: 1px solid #f3f3f0; }
+  .pricing .card li:first-child { border-top: none; }
+
+  /* Footer */
+  footer { background: #1e1e1e; color: #c2c2bb; padding: 56px 32px 36px; }
+  footer .grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; max-width: 1100px; margin: 0 auto; }
+  footer h4 { font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; margin: 0 0 14px; color: #fff; }
+  footer ul { padding: 0; margin: 0; list-style: none; }
+  footer li { font-size: 13px; padding: 4px 0; }
+  footer .bottom { max-width: 1100px; margin: 40px auto 0; padding-top: 24px; border-top: 1px solid #2a2a2a; font-size: 12px; display: flex; justify-content: space-between; }
+</style>
+</head>
+<body>
+  <nav>
+    <div class="logo">YOUR PRODUCT</div>
+    <div class="links">
+      <span>Product</span>
+      <span>Solutions</span>
+      <span>Pricing</span>
+      <span>Customers</span>
+      <span>Resources</span>
+    </div>
+    <a class="cta">Get started</a>
+  </nav>
+
+  <section class="hero">
+    <div class="container">
+      <div class="eyebrow">TRUSTED BY TEAMS WORLDWIDE</div>
+      <h1>Your Product: built for the way you work.</h1>
+      <p>The leading platform for modern teams. Get started today and unlock your potential. Streamline workflows, accelerate growth, and empower your organization at every stage.</p>
+      <div class="cta-row">
+        <a class="btn-primary">Get started free</a>
+        <a class="btn-secondary">Book a demo</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="logos">
+    <div class="container">
+      <div class="label">USED BY TEAMS AT</div>
+      <div class="row">
+        <span>ACME CORP</span><span>GLOBEX</span><span>INITECH</span><span>UMBRELLA</span><span>STARK</span><span>WAYNE</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="container">
+      <h2>Everything you need, all in one place.</h2>
+      <p class="sub">Powerful features designed to help your team move faster and deliver more.</p>
+      <div class="grid">
+        <div class="card"><div class="icon"></div><h3>Powerful integrations</h3><p>Connect with the tools you already use to keep your workflow seamless.</p></div>
+        <div class="card"><div class="icon"></div><h3>Enterprise security</h3><p>SOC 2 Type II, GDPR ready. Your data is encrypted at rest and in transit.</p></div>
+        <div class="card"><div class="icon"></div><h3>Real-time collaboration</h3><p>Work together with your team from anywhere, on any device, in real time.</p></div>
+        <div class="card"><div class="icon"></div><h3>Smart analytics</h3><p>Get insights that matter with dashboards built for the metrics you care about.</p></div>
+        <div class="card"><div class="icon"></div><h3>Automation</h3><p>Automate repetitive tasks and focus on what really moves the needle.</p></div>
+        <div class="card"><div class="icon"></div><h3>24/7 support</h3><p>Our world-class team is here whenever you need us. Reach out any time.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonial">
+    <blockquote>"Your Product has completely changed the way our team operates. We can't imagine working without it now."</blockquote>
+    <div class="author">— Sarah Mitchell, VP of Operations</div>
+  </section>
+
+  <section class="pricing">
+    <div class="container">
+      <h2>Simple, transparent pricing.</h2>
+      <p class="sub">Choose the plan that fits your team. Upgrade or downgrade at any time.</p>
+      <div class="row">
+        <div class="card">
+          <div class="name">Starter</div>
+          <div class="price">$29<small> / mo</small></div>
+          <ul><li>Up to 5 users</li><li>Basic integrations</li><li>Email support</li><li>10 GB storage</li></ul>
+        </div>
+        <div class="card">
+          <div class="name">Pro</div>
+          <div class="price">$99<small> / mo</small></div>
+          <ul><li>Up to 25 users</li><li>All integrations</li><li>Priority support</li><li>100 GB storage</li></ul>
+        </div>
+        <div class="card">
+          <div class="name">Enterprise</div>
+          <div class="price">Custom</div>
+          <ul><li>Unlimited users</li><li>SSO + audit logs</li><li>Dedicated CSM</li><li>Unlimited storage</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="grid">
+      <div>
+        <h4>YOUR PRODUCT</h4>
+        <p style="font-size:13px;color:#9c9c95;max-width:300px;line-height:1.55;margin:0">The leading platform for modern teams. Built for businesses that move fast.</p>
+      </div>
+      <div><h4>Product</h4><ul><li>Features</li><li>Integrations</li><li>Pricing</li><li>Changelog</li></ul></div>
+      <div><h4>Company</h4><ul><li>About</li><li>Customers</li><li>Careers</li><li>Press</li></ul></div>
+      <div><h4>Resources</h4><ul><li>Blog</li><li>Help center</li><li>Contact</li><li>Status</li></ul></div>
+    </div>
+    <div class="bottom"><span>© 2018 Your Product, Inc. All rights reserved.</span><span>Privacy · Terms · Cookies</span></div>
+  </footer>
+</body>
+</html>
