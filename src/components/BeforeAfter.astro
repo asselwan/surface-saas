@@ -36,13 +36,37 @@ const {
     ></iframe>
   </div>
 
-  <!-- AFTER: full live iframe (nomoi.ai by default), clipped from left -->
+  <!--
+    AFTER: live iframe, but mounted ONLY on click. Auto-mounting nomoi.ai
+    inside this slider caused the box to hang the whole page while the
+    embedded Astro app + Clarity + Supabase + fonts loaded (and some
+    browsers/CSPs render it broken). Poster-first keeps the slider
+    instant; user opts into the heavy load.
+  -->
   <div class="surface-ba-after" style="position:absolute;inset:0;clip-path:inset(0 0 0 50%);background:var(--bg2)">
+    <div
+      data-surface-ba-poster
+      style="position:absolute;inset:0;background:#0c0a08;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#c4976b;font-family:var(--mono);text-align:center;padding:24px"
+    >
+      <div style="font-size:11px;letter-spacing:0.18em;color:#6c6c66">LIVE PREVIEW · NOMOI.AI</div>
+      <button
+        type="button"
+        data-surface-ba-activate
+        style="background:var(--gold);color:#0c0a08;border:0;font-family:var(--mono);font-weight:600;font-size:13px;letter-spacing:0.06em;padding:12px 22px;border-radius:6px;cursor:pointer;box-shadow:0 4px 18px rgba(196,151,107,0.35)"
+      >
+        ▶ Tap to load
+      </button>
+      <div style="font-size:10px;letter-spacing:0.04em;color:#6c6c66;max-width:280px;line-height:1.5">
+        Live page mounts inside the slider. Scroll, click, hover after it loads.
+      </div>
+    </div>
     <iframe
-      src={afterUrl}
+      data-surface-ba-iframe
+      data-src={afterUrl}
+      src="about:blank"
       title="A live Surface page — move your cursor, scroll"
       loading="lazy"
-      style="width:100%;height:100%;border:0;display:block;background:#0c0a08"
+      style="width:100%;height:100%;border:0;display:none;background:#0c0a08"
     ></iframe>
   </div>
 
@@ -79,6 +103,22 @@ const {
       const divider = wrap.querySelector('.surface-ba-divider');
       const handle = wrap.querySelector('.surface-ba-handle');
       if (!after || !divider || !handle) return;
+
+      // Click-to-activate live iframe (poster -> iframe swap).
+      const poster = wrap.querySelector('[data-surface-ba-poster]');
+      const liveFrame = wrap.querySelector('[data-surface-ba-iframe]');
+      const activate = wrap.querySelector('[data-surface-ba-activate]');
+      if (activate && poster && liveFrame) {
+        activate.addEventListener('click', (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          const src = liveFrame.getAttribute('data-src');
+          if (src) liveFrame.setAttribute('src', src);
+          liveFrame.style.display = 'block';
+          poster.style.display = 'none';
+        });
+      }
+
       let dragging = false;
 
       const setPosition = (clientX) => {
