@@ -1,0 +1,147 @@
+---
+/**
+ * Draggable before/after comparison slider.
+ *
+ * Two layers stacked at the same size. The "after" layer is clipped from
+ * the left edge to the slider position; the "before" layer fills the rest.
+ * Pointer / touch drags adjust the clip. Defaults to 50%.
+ *
+ * Either side can be an <img> URL or a <video> URL — auto-detected by
+ * extension. Tip: use a still poster for the "before" side and the live
+ * Surface video for the "after" side so the contrast is visible at rest.
+ */
+interface Props {
+  beforeUrl: string;
+  afterUrl: string;
+  beforeLabel?: string;
+  afterLabel?: string;
+  posterAfter?: string;
+}
+const { beforeUrl, afterUrl, beforeLabel = 'Before Surface', afterLabel = 'After Surface', posterAfter } = Astro.props as Props;
+
+const beforeIsVideo = /\.(mp4|webm|mov)$/i.test(beforeUrl);
+const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
+---
+<div
+  class="surface-ba"
+  data-surface-before-after
+  style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-s);background:var(--bg2);user-select:none;touch-action:none"
+>
+  <!-- BEFORE layer (full) -->
+  <div style="position:absolute;inset:0">
+    {beforeIsVideo ? (
+      <video autoplay muted playsinline loop preload="metadata" aria-label={beforeLabel}
+        style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(40%) brightness(0.85)">
+        <source src={beforeUrl} type="video/mp4" />
+      </video>
+    ) : (
+      <img src={beforeUrl} alt={beforeLabel}
+        style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(40%) brightness(0.85)" />
+    )}
+  </div>
+
+  <!-- AFTER layer, clipped from left -->
+  <div class="surface-ba-after" style="position:absolute;inset:0;clip-path:inset(0 0 0 50%)">
+    {afterIsVideo ? (
+      <video autoplay muted playsinline loop preload="metadata" poster={posterAfter} aria-label={afterLabel}
+        style="width:100%;height:100%;object-fit:cover;display:block">
+        <source src={afterUrl} type="video/mp4" />
+      </video>
+    ) : (
+      <img src={afterUrl} alt={afterLabel}
+        style="width:100%;height:100%;object-fit:cover;display:block" />
+    )}
+  </div>
+
+  <!-- Labels -->
+  <div style="position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);background:rgba(12,10,8,0.6);padding:6px 10px;border-radius:4px;pointer-events:none">
+    BEFORE
+  </div>
+  <div style="position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:#0c0a08;background:var(--gold);padding:6px 10px;border-radius:4px;pointer-events:none">
+    AFTER · LIVE
+  </div>
+
+  <!-- Divider + handle -->
+  <div class="surface-ba-divider" style="position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--gold);transform:translateX(-50%);pointer-events:none">
+    <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:#0c0a08;font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.06em">
+      ◂ ▸
+    </div>
+  </div>
+</div>
+
+<p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0;text-align:center;letter-spacing:0.04em">
+  Drag the gold line.
+</p>
+
+<script is:inline>
+  (function () {
+    const wraps = document.querySelectorAll('[data-surface-before-after]');
+    wraps.forEach((wrap) => {
+      const after = wrap.querySelector('.surface-ba-after');
+      const divider = wrap.querySelector('.surface-ba-divider');
+      if (!after || !divider) return;
+      let dragging = false;
+
+      const setPosition = (clientX) => {
+        const rect = wrap.getBoundingClientRect();
+        const x = Math.max(0, Math.min(rect.width, clientX - rect.left));
+        const pct = (x / rect.width) * 100;
+        after.style.clipPath = `inset(0 0 0 ${pct}%)`;
+        divider.style.left = `${pct}%`;
+      };
+
+      const onDown = (ev) => {
+        dragging = true;
+        const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        setPosition(x);
+        ev.preventDefault();
+      };
+      const onMove = (ev) => {
+        if (!dragging) return;
+        const x = ev.touches ? ev.touches[0].clientX : ev.clientX;
+        setPosition(x);
+      };
+      const onUp = () => { dragging = false; };
+
+      wrap.addEventListener('mousedown', onDown);
+      wrap.addEventListener('touchstart', onDown, { passive: false });
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, { passive: true });
+      window.addEventListener('mouseup', onUp);
+      window.addEventListener('touchend', onUp);
+
+      // Auto-demo wiggle on first viewport entry so the affordance is obvious.
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+          if (!e.isIntersecting) return;
+          io.disconnect();
+          let pct = 50;
+          let dir = -1;
+          let step = 0;
+          const tick = () => {
+            pct += dir * 1.5;
+            if (pct <= 22) dir = 1;
+            if (pct >= 78) dir = -1;
+            after.style.clipPath = `inset(0 0 0 ${pct}%)`;
+            divider.style.left = `${pct}%`;
+            step += 1;
+            if (step < 90 && !dragging) requestAnimationFrame(tick);
+            else if (!dragging) {
+              // settle at 50
+              after.style.transition = 'clip-path 0.5s';
+              divider.style.transition = 'left 0.5s';
+              after.style.clipPath = 'inset(0 0 0 50%)';
+              divider.style.left = '50%';
+              setTimeout(() => {
+                after.style.transition = '';
+                divider.style.transition = '';
+              }, 600);
+            }
+          };
+          requestAnimationFrame(tick);
+        });
+      }, { threshold: 0.3 });
+      io.observe(wrap);
+    });
+  })();
+</script>

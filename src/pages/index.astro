@@ -1,11 +1,17 @@
 ---
 import Brand from '@/components/Brand.astro';
+import BeforeAfter from '@/components/BeforeAfter.astro';
 import { getSession } from '@/lib/auth';
 
 export const prerender = false;
 const session = await getSession(Astro.cookies);
-const heroVideoUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos/surface-v3.mp4';
-const heroPosterUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos/surface-v3.jpg';
+const STORAGE = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos';
+const heroVideoUrl = `${STORAGE}/surface-v3.mp4`;
+const heroPosterUrl = `${STORAGE}/surface-v3.jpg`;
+// Before = still poster (frozen page), After = live video. Drop in better pairs as we capture them.
+const beforeStillUrl = `${STORAGE}/cogwellness-v3.jpg`;
+const afterVideoUrl = `${STORAGE}/cogwellness-v3.mp4`;
+const afterPosterUrl = `${STORAGE}/cogwellness-v3.jpg`;
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -32,8 +38,8 @@ const heroPosterUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/objec
     </p>
 
     <div style="display:flex;gap:14px;margin-bottom:18px">
-      <a href="/login" style="background:var(--gold);color:#0c0a08;padding:16px 30px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.02em">
-        Start — first refresh by tomorrow →
+      <a href="/start" style="background:var(--gold);color:#0c0a08;padding:16px 30px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.02em">
+        Paste your URL — first refresh by tomorrow →
       </a>
       <a href="https://nomoi.ai" target="_blank" rel="noopener" style="border:0.5px solid var(--border-s);color:var(--text-mid);padding:16px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px">
         See it live on nomoi.ai
@@ -43,6 +49,21 @@ const heroPosterUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/objec
     <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0;letter-spacing:0.04em">
       No card needed. Set up in one short call. You're always in charge.
     </p>
+  </section>
+
+  <!-- BEFORE / AFTER SLIDER -->
+  <section style="max-width:1080px;margin:0 auto;padding:0 36px 64px">
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px;text-align:center">SEE THE SHIFT</p>
+    <h2 style="font-family:var(--serif);font-size:30px;font-weight:400;line-height:1.15;margin:0 0 24px;text-align:center;max-width:680px;margin-left:auto;margin-right:auto">
+      Same product. <em style="font-style:italic;color:var(--gold)">Before</em> Surface, and <em style="font-style:italic;color:var(--gold)">after</em>.
+    </h2>
+    <BeforeAfter
+      beforeUrl={beforeStillUrl}
+      afterUrl={afterVideoUrl}
+      posterAfter={afterPosterUrl}
+      beforeLabel="A static landing page that hasn't moved in a year"
+      afterLabel="The same page after Surface — alive, rotating, judged"
+    />
   </section>
 
   <!-- DEMO VIDEO -->
@@ -169,8 +190,8 @@ const heroPosterUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/objec
     </div>
 
     <div style="text-align:center;margin-top:56px">
-      <a href="/login" style="background:var(--gold);color:#0c0a08;padding:18px 36px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:0.02em;display:inline-block">
-        Start now — first refresh by tomorrow →
+      <a href="/start" style="background:var(--gold);color:#0c0a08;padding:18px 36px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:0.02em;display:inline-block">
+        Paste your URL — first refresh by tomorrow →
       </a>
     </div>
   </section>

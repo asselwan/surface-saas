@@ -1,0 +1,180 @@
+---
+import Brand from '@/components/Brand.astro';
+import { scrapeUrl, type ScrapeResult } from '@/lib/scrape';
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '@/lib/supabase';
+
+export const prerender = false;
+
+const PENDING_COOKIE = 'surface-pending-intent';
+
+async function sendMagicLink(email: string, origin: string): Promise<string | null> {
+  try {
+    const r = await fetch(`${PUBLIC_SUPABASE_URL}/auth/v1/otp`, {
+      method: 'POST',
+      headers: {
+        apikey: PUBLIC_SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${PUBLIC_SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email,
+        options: { emailRedirectTo: `${origin}/auth/callback` },
+      }),
+    });
+    if (!r.ok) {
+      const t = await r.text();
+      return `magic link failed: ${t.slice(0, 200)}`;
+    }
+    return null;
+  } catch (err) {
+    return `magic link error: ${(err as Error).message?.slice(0, 200)}`;
+  }
+}
+
+let scrape: ScrapeResult | null = null;
+let error: string | null = null;
+let email = '';
+let url = '';
+let sent = false;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const stage = String(form.get('_stage') ?? 'scrape');
+  url = String(form.get('url') ?? '').trim();
+  email = String(form.get('email') ?? '').trim();
+
+  if (!url) {
+    error = 'Paste your URL to start.';
+  } else if (stage === 'scrape') {
+    scrape = await scrapeUrl(url);
+    if (scrape.error && !scrape.name) {
+      error = `Could not read ${scrape.hostname}. You can still continue — we'll work from what you tell us.`;
+    }
+  } else if (stage === 'send') {
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      error = 'Enter a valid email.';
+    } else {
+      scrape = await scrapeUrl(url);
+      // Stash the pending intent so /auth/callback can pick it up post-magic-link.
+      Astro.cookies.set(PENDING_COOKIE, JSON.stringify({
+        url: scrape.url,
+        derivedKey: scrape.derivedKey,
+        name: scrape.name,
+        tagline: scrape.tagline,
+        essay: scrape.essay,
+        capturedAt: scrape.fetchedAt,
+      }), {
+        path: '/',
+        httpOnly: true,
+        secure: true,
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 7,
+      });
+      const linkErr = await sendMagicLink(email, Astro.url.origin);
+      if (linkErr) {
+        error = linkErr;
+      } else {
+        sent = true;
+      }
+    }
+  }
+}
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Start — NOMOI Surface</title>
+</head>
+<body>
+<Brand />
+
+<main style="max-width:680px;margin:0 auto;padding:64px 36px 96px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">START</p>
+
+  {sent ? (
+    <>
+      <h1 style="font-family:var(--serif);font-size:44px;font-weight:400;line-height:1.05;margin:0 0 18px">Check your email.</h1>
+      <p style="font-family:var(--sans);font-size:17px;color:var(--text-mid);font-weight:300;margin:0 0 32px;line-height:1.6">
+        We sent a sign-in link to <span style="color:var(--gold);font-family:var(--mono);font-size:14px">{email}</span>. Click it and your first product is already pre-filled. First refresh runs about ten minutes after.
+      </p>
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:0.04em;margin:0">Didn't arrive? Check spam, or <a href="/start" style="color:var(--gold);text-decoration:none">resend</a>.</p>
+    </>
+  ) : !scrape ? (
+    <>
+      <h1 style="font-family:var(--serif);font-size:44px;font-weight:400;line-height:1.05;margin:0 0 18px">Paste your URL. We do the rest.</h1>
+      <p style="font-family:var(--sans);font-size:17px;color:var(--text-mid);font-weight:300;margin:0 0 32px;line-height:1.6">
+        Drop your homepage. We'll read what's there, show you what we found, and have your first refresh live by tomorrow morning.
+      </p>
+
+      {error && (
+        <p style="background:rgba(196,151,107,0.12);border:0.5px solid var(--gold);border-radius:8px;padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--gold);margin:0 0 24px">
+          {error}
+        </p>
+      )}
+
+      <form method="post">
+        <input type="hidden" name="_stage" value="scrape" />
+        <label style="display:grid;gap:8px">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">YOUR URL</span>
+          <input name="url" type="url" required autofocus value={url} placeholder="https://yourproduct.com"
+            style="font-family:var(--mono);font-size:16px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:10px;padding:18px 20px;color:var(--text)" />
+        </label>
+        <button type="submit" style="margin-top:18px;background:var(--gold);color:#0c0a08;padding:16px 32px;border-radius:8px;border:none;font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.02em">
+          Read it →
+        </button>
+      </form>
+      <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:18px 0 0;letter-spacing:0.04em">No card. No install. Email confirmation only.</p>
+    </>
+  ) : (
+    <>
+      <h1 style="font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.05;margin:0 0 14px">Here's what we found.</h1>
+      <p style="font-family:var(--sans);font-size:15px;color:var(--text-mid);font-weight:300;margin:0 0 28px;line-height:1.6">
+        We read <span style="color:var(--gold);font-family:var(--mono);font-size:13px">{scrape.hostname}</span>. Confirm your email and we'll get started.
+      </p>
+
+      <article style="background:var(--bg2);border:0.5px solid var(--border-s);border-radius:14px;padding:24px 28px;margin-bottom:28px">
+        <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">PRE-FILLED</p>
+        {scrape.name ? (
+          <h3 style="font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 10px">{scrape.name}</h3>
+        ) : (
+          <p style="font-family:var(--mono);font-size:12px;color:var(--text-faint);margin:0 0 10px">No title found — you can name it on the next screen.</p>
+        )}
+        {scrape.tagline && (
+          <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);font-weight:300;margin:0 0 12px;line-height:1.55">{scrape.tagline}</p>
+        )}
+        {scrape.essay && scrape.essay !== scrape.tagline && (
+          <p style="font-family:var(--sans);font-size:13px;color:var(--text-muted);font-weight:300;margin:0;line-height:1.55">{scrape.essay}</p>
+        )}
+        {scrape.error && (
+          <p style="font-family:var(--mono);font-size:11px;color:var(--gold);margin:14px 0 0">Read partial: {scrape.error}. We'll work from what you tell us.</p>
+        )}
+      </article>
+
+      {error && (
+        <p style="background:rgba(196,151,107,0.12);border:0.5px solid var(--gold);border-radius:8px;padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--gold);margin:0 0 18px">
+          {error}
+        </p>
+      )}
+
+      <form method="post" style="display:grid;gap:16px">
+        <input type="hidden" name="_stage" value="send" />
+        <input type="hidden" name="url" value={scrape.url} />
+        <label style="display:grid;gap:8px">
+          <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">YOUR EMAIL</span>
+          <input name="email" type="email" required autofocus value={email} placeholder="you@example.com"
+            style="font-family:var(--mono);font-size:16px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:10px;padding:16px 20px;color:var(--text)" />
+        </label>
+        <button type="submit" style="background:var(--gold);color:#0c0a08;padding:16px 32px;border-radius:8px;border:none;font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer;letter-spacing:0.02em">
+          Send my sign-in link →
+        </button>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0;letter-spacing:0.04em">First refresh runs about ten minutes after you sign in. Cancel anytime, one click.</p>
+      </form>
+
+      <p style="margin-top:24px"><a href="/start" style="font-family:var(--mono);font-size:11px;color:var(--text-muted);text-decoration:none">← Different URL</a></p>
+    </>
+  )}
+</main>
+</body>
+</html>

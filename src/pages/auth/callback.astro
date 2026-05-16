@@ -1,17 +1,12 @@
 ---
 import { setSessionCookie, ensureAccount } from '@/lib/auth';
 import { getServerClient } from '@/lib/supabase';
+import { createProduct } from '@/lib/products';
+import { deriveKey } from '@/lib/scrape';
 
 export const prerender = false;
 
-// Supabase magic-link / OAuth flows redirect to this URL with an
-// access_token in the URL fragment. We can't read fragments server-side,
-// so client JS posts the token back. Two-leg flow:
-//   1. SSR: render a minimal page with a script that reads the fragment
-//      and re-loads the page with ?token=... in the query string.
-//   2. SSR (second leg): validate the token via supabase.auth.getUser(),
-//      bootstrap the account row if needed, set the cookie, redirect
-//      to /dashboard.
+const PENDING_COOKIE = 'surface-pending-intent';
 
 const url = Astro.url;
 const queryToken = url.searchParams.get('token');
@@ -26,7 +21,40 @@ if (queryToken) {
     } catch (err) {
       console.error('[auth/callback] account bootstrap failed', err);
     }
-    return Astro.redirect('/dashboard');
+
+    // If the user came in via /start with a pre-scraped product, create it now
+    // so the dashboard isn't empty on first visit.
+    const pendingRaw = Astro.cookies.get(PENDING_COOKIE)?.value;
+    let redirectTarget = '/dashboard';
+    if (pendingRaw) {
+      try {
+        const pending = JSON.parse(pendingRaw) as {
+          url?: string;
+          derivedKey?: string;
+          name?: string | null;
+          tagline?: string | null;
+          essay?: string | null;
+        };
+        if (pending.url) {
+          const key = (pending.derivedKey || deriveKey(pending.url)).toLowerCase();
+          const name = pending.name || pending.url.replace(/^https?:\/\//, '').replace(/\/$/, '');
+          const result = await createProduct(Astro.cookies, {
+            key,
+            name: name.slice(0, 120),
+            tagline: pending.tagline?.slice(0, 200) || undefined,
+            essay: pending.essay?.slice(0, 1200) || undefined,
+            url: pending.url,
+          });
+          if ('id' in result) {
+            redirectTarget = `/dashboard/products/${result.id}?added=1&fromStart=1`;
+          }
+        }
+      } catch (err) {
+        console.error('[auth/callback] pending intent parse failed', err);
+      }
+      Astro.cookies.delete(PENDING_COOKIE, { path: '/' });
+    }
+    return Astro.redirect(redirectTarget);
   }
   return Astro.redirect('/login?error=invalid_token');
 }
