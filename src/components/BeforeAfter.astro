@@ -2,59 +2,70 @@
 /**
  * Draggable before/after comparison slider.
  *
- * Two layers stacked at the same size. The "after" layer is clipped from
- * the left edge to the slider position; the "before" layer fills the rest.
- * Pointer / touch drags adjust the clip. Defaults to 50%.
+ * "Before" is an HTML mockup of a typical stale landing page — no image
+ * needed. "After" is a live video of a real Surface-treated page. The
+ * visual contrast is the message: lifeless static → alive in motion.
  *
- * Either side can be an <img> URL or a <video> URL — auto-detected by
- * extension. Tip: use a still poster for the "before" side and the live
- * Surface video for the "after" side so the contrast is visible at rest.
+ * The divider auto-wiggles once on first viewport entry so the affordance
+ * is obvious. Mouse + touch supported.
  */
 interface Props {
-  beforeUrl: string;
   afterUrl: string;
-  beforeLabel?: string;
-  afterLabel?: string;
   posterAfter?: string;
+  beforeName?: string;
+  beforeTagline?: string;
 }
-const { beforeUrl, afterUrl, beforeLabel = 'Before Surface', afterLabel = 'After Surface', posterAfter } = Astro.props as Props;
-
-const beforeIsVideo = /\.(mp4|webm|mov)$/i.test(beforeUrl);
-const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
+const {
+  afterUrl,
+  posterAfter,
+  beforeName = 'Your Product',
+  beforeTagline = 'The leading platform for modern teams. Get started today and unlock your potential.',
+} = Astro.props as Props;
 ---
 <div
   class="surface-ba"
   data-surface-before-after
-  style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-s);background:var(--bg2);user-select:none;touch-action:none"
+  style="position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;border:0.5px solid var(--border-s);user-select:none;touch-action:none"
 >
-  <!-- BEFORE layer (full) -->
-  <div style="position:absolute;inset:0">
-    {beforeIsVideo ? (
-      <video autoplay muted playsinline loop preload="metadata" aria-label={beforeLabel}
-        style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(40%) brightness(0.85)">
-        <source src={beforeUrl} type="video/mp4" />
-      </video>
-    ) : (
-      <img src={beforeUrl} alt={beforeLabel}
-        style="width:100%;height:100%;object-fit:cover;display:block;filter:grayscale(40%) brightness(0.85)" />
-    )}
+  <!-- BEFORE: HTML mockup of a flat, lifeless landing page -->
+  <div style="position:absolute;inset:0;background:#f6f6f4;color:#1e1e1e;font-family:'Inter',system-ui,sans-serif;display:flex;flex-direction:column">
+    <!-- fake nav -->
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 32px;border-bottom:1px solid #e5e5e0">
+      <div style="font-weight:700;font-size:15px;letter-spacing:-0.01em">{beforeName.toUpperCase()}</div>
+      <div style="display:flex;gap:22px;font-size:12px;color:#6c6c66">
+        <span>Product</span><span>Pricing</span><span>Login</span>
+      </div>
+    </div>
+    <!-- fake hero -->
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:0 8% 0 8%;gap:14px">
+      <div style="font-size:11px;letter-spacing:0.18em;color:#9c9c95;font-weight:500">TRUSTED BY TEAMS WORLDWIDE</div>
+      <h3 style="font-size:42px;font-weight:600;line-height:1.05;letter-spacing:-0.02em;color:#101010;margin:0;max-width:80%">
+        {beforeName}: built for the way you work.
+      </h3>
+      <p style="font-size:14px;line-height:1.55;color:#5b5b54;max-width:60%;margin:0">{beforeTagline}</p>
+      <div style="display:flex;gap:10px;margin-top:10px">
+        <span style="background:#1e1e1e;color:#fff;padding:11px 22px;border-radius:6px;font-size:12px;font-weight:500">Get started</span>
+        <span style="background:#fff;color:#1e1e1e;padding:11px 22px;border-radius:6px;font-size:12px;border:1px solid #d8d8d2">Learn more</span>
+      </div>
+    </div>
+    <!-- fake footer rows: dead generic content boxes -->
+    <div style="display:flex;gap:10px;padding:0 8% 22px">
+      <div style="flex:1;height:34px;background:#ececec;border-radius:4px"></div>
+      <div style="flex:1;height:34px;background:#ececec;border-radius:4px"></div>
+      <div style="flex:1;height:34px;background:#ececec;border-radius:4px"></div>
+    </div>
   </div>
 
-  <!-- AFTER layer, clipped from left -->
-  <div class="surface-ba-after" style="position:absolute;inset:0;clip-path:inset(0 0 0 50%)">
-    {afterIsVideo ? (
-      <video autoplay muted playsinline loop preload="metadata" poster={posterAfter} aria-label={afterLabel}
-        style="width:100%;height:100%;object-fit:cover;display:block">
-        <source src={afterUrl} type="video/mp4" />
-      </video>
-    ) : (
-      <img src={afterUrl} alt={afterLabel}
-        style="width:100%;height:100%;object-fit:cover;display:block" />
-    )}
+  <!-- AFTER: live Surface video, clipped from left -->
+  <div class="surface-ba-after" style="position:absolute;inset:0;clip-path:inset(0 0 0 50%);background:var(--bg2)">
+    <video autoplay muted playsinline loop preload="metadata" poster={posterAfter} aria-label="Same page after Surface — alive"
+      style="width:100%;height:100%;object-fit:cover;display:block">
+      <source src={afterUrl} type="video/mp4" />
+    </video>
   </div>
 
   <!-- Labels -->
-  <div style="position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);background:rgba(12,10,8,0.6);padding:6px 10px;border-radius:4px;pointer-events:none">
+  <div style="position:absolute;top:14px;left:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:#6c6c66;background:rgba(255,255,255,0.85);padding:6px 10px;border-radius:4px;pointer-events:none">
     BEFORE
   </div>
   <div style="position:absolute;top:14px;right:14px;font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:#0c0a08;background:var(--gold);padding:6px 10px;border-radius:4px;pointer-events:none">
@@ -62,7 +73,7 @@ const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
   </div>
 
   <!-- Divider + handle -->
-  <div class="surface-ba-divider" style="position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--gold);transform:translateX(-50%);pointer-events:none">
+  <div class="surface-ba-divider" style="position:absolute;top:0;bottom:0;left:50%;width:2px;background:var(--gold);transform:translateX(-50%);pointer-events:none;z-index:5">
     <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:44px;height:44px;border-radius:50%;background:var(--gold);box-shadow:0 4px 16px rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;color:#0c0a08;font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:0.06em">
       ◂ ▸
     </div>
@@ -70,7 +81,7 @@ const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
 </div>
 
 <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0;text-align:center;letter-spacing:0.04em">
-  Drag the gold line.
+  Drag the gold line. Left is a typical static landing. Right is the same page once Surface is on.
 </p>
 
 <script is:inline>
@@ -110,7 +121,7 @@ const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
       window.addEventListener('mouseup', onUp);
       window.addEventListener('touchend', onUp);
 
-      // Auto-demo wiggle on first viewport entry so the affordance is obvious.
+      // Auto-wiggle on first viewport entry so the affordance is obvious.
       const io = new IntersectionObserver((entries) => {
         entries.forEach((e) => {
           if (!e.isIntersecting) return;
@@ -127,7 +138,6 @@ const afterIsVideo = /\.(mp4|webm|mov)$/i.test(afterUrl);
             step += 1;
             if (step < 90 && !dragging) requestAnimationFrame(tick);
             else if (!dragging) {
-              // settle at 50
               after.style.transition = 'clip-path 0.5s';
               divider.style.transition = 'left 0.5s';
               after.style.clipPath = 'inset(0 0 0 50%)';

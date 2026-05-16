@@ -6,10 +6,7 @@ import { getSession } from '@/lib/auth';
 export const prerender = false;
 const session = await getSession(Astro.cookies);
 const STORAGE = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos';
-const heroVideoUrl = `${STORAGE}/surface-v3.mp4`;
-const heroPosterUrl = `${STORAGE}/surface-v3.jpg`;
-// Before = still poster (frozen page), After = live video. Drop in better pairs as we capture them.
-const beforeStillUrl = `${STORAGE}/cogwellness-v3.jpg`;
+// Real Surface-treated NOMOI product video for the "after" half of the slider.
 const afterVideoUrl = `${STORAGE}/cogwellness-v3.mp4`;
 const afterPosterUrl = `${STORAGE}/cogwellness-v3.jpg`;
 ---
@@ -58,26 +55,13 @@ const afterPosterUrl = `${STORAGE}/cogwellness-v3.jpg`;
       Same product. <em style="font-style:italic;color:var(--gold)">Before</em> Surface, and <em style="font-style:italic;color:var(--gold)">after</em>.
     </h2>
     <BeforeAfter
-      beforeUrl={beforeStillUrl}
       afterUrl={afterVideoUrl}
       posterAfter={afterPosterUrl}
-      beforeLabel="A static landing page that hasn't moved in a year"
-      afterLabel="The same page after Surface — alive, rotating, judged"
+      beforeName="Your Product"
+      beforeTagline="The leading platform for modern teams. Get started today and unlock your potential."
     />
-  </section>
-
-  <!-- DEMO VIDEO -->
-  <section style="max-width:1080px;margin:0 auto;padding:0 36px 80px">
-    <div style="border:0.5px solid var(--border-s);border-radius:14px;overflow:hidden;background:var(--bg2);aspect-ratio:16/9">
-      <video autoplay muted playsinline loop preload="metadata"
-        poster={heroPosterUrl}
-        aria-label="A page that updates itself"
-        style="width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)">
-        <source src={heroVideoUrl} type="video/mp4" />
-      </video>
-    </div>
-    <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0;text-align:center;letter-spacing:0.04em">
-      The cards above are real. Refresh nomoi.ai tomorrow — at least one will have changed.
+    <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:18px 0 0;text-align:center;letter-spacing:0.04em">
+      Real example on the right: a NOMOI product page that Surface refreshes every week.
     </p>
   </section>
 
