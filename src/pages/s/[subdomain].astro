@@ -1,0 +1,84 @@
+---
+/**
+ * Public per-account showcase. URL: /s/<subdomain>
+ *
+ * Renders the account's live products via the surface_saas.public_showcase
+ * view (anon-readable, filters out paused/hidden). When wildcard DNS lands
+ * (Phase 2.5), middleware will rewrite <subdomain>.surface.nomoi.ai → this
+ * same route.
+ */
+import Brand from '@/components/Brand.astro';
+import { getPublicClient } from '@/lib/supabase';
+
+export const prerender = false;
+const subdomain = String(Astro.params.subdomain ?? '').toLowerCase();
+const client = getPublicClient();
+
+const { data: products } = await client
+  .schema('surface_saas')
+  .from('public_showcase')
+  .select('id, account_id, key, name, tagline, essay, url, cta, category, sort_order, subdomain')
+  .eq('subdomain', subdomain)
+  .order('sort_order', { ascending: true });
+
+if (!products || products.length === 0) {
+  return new Response('Showcase not found', { status: 404 });
+}
+
+const accountId = products[0].account_id;
+const storageBase = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-saas';
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{subdomain} — Surface</title>
+</head>
+<body>
+<Brand />
+
+<main style="max-width:1180px;margin:0 auto;padding:80px 36px 96px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">
+    {subdomain.toUpperCase()} · SURFACE
+  </p>
+  <h1 style="font-family:var(--serif);font-size:56px;font-weight:400;line-height:1.05;letter-spacing:-0.02em;margin:0 0 40px">
+    What we make.
+  </h1>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:24px">
+    {products.map((p: any) => {
+      const video = `${storageBase}/${accountId}/${p.key}-v3.mp4`;
+      const poster = `${storageBase}/${accountId}/${p.key}-v3.jpg`;
+      return (
+        <article style="background:var(--bg2);border:0.5px solid var(--border-s);border-radius:14px;overflow:hidden">
+          <div style="aspect-ratio:16/9;background:var(--bg3)">
+            <video autoplay muted playsinline loop preload="metadata"
+              poster={poster}
+              aria-label={`${p.name} video`}
+              style="width:100%;height:100%;object-fit:cover;display:block">
+              <source src={video} type="video/mp4" />
+            </video>
+          </div>
+          <div style="padding:24px 24px 28px">
+            <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 8px">{(p.category ?? '').toUpperCase()}</p>
+            <h3 style="font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 10px">{p.name}</h3>
+            {p.tagline && <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.6;font-weight:300;margin:0 0 14px">{p.tagline}</p>}
+            {p.url && (
+              <a href={p.url.startsWith('http') ? p.url : `https://${p.url}`} target="_blank" rel="noopener"
+                style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none;border-bottom:0.5px solid rgba(196,151,107,0.4);padding-bottom:1px">
+                {p.cta ?? 'Open'} →
+              </a>
+            )}
+          </div>
+        </article>
+      );
+    })}
+  </div>
+</main>
+
+<footer style="border-top:0.5px solid var(--border);padding:24px 36px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-faint)">
+  Surface keeps this alive. <a href="https://surface.nomoi.ai" style="color:var(--gold);text-decoration:none">Get one →</a>
+</footer>
+</body>
+</html>

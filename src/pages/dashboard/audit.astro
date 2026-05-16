@@ -1,0 +1,55 @@
+---
+import Brand from '@/components/Brand.astro';
+import { getSession } from '@/lib/auth';
+import { listAuditLog } from '@/lib/products';
+
+export const prerender = false;
+const session = await getSession(Astro.cookies);
+if (!session) return Astro.redirect('/login');
+if (!session.account) return Astro.redirect('/dashboard');
+
+const audit = await listAuditLog(Astro.cookies, { limit: 500 });
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Activity — NOMOI Surface</title>
+</head>
+<body>
+<Brand authedEmail={session.user.email} />
+
+<main style="max-width:1080px;margin:0 auto;padding:36px 36px 80px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">
+    <a href="/dashboard" style="text-decoration:none;color:inherit">DASHBOARD</a> · ACTIVITY
+  </p>
+  <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:24px">
+    <h1 style="font-family:var(--serif);font-size:38px;font-weight:400;margin:0">Activity log</h1>
+    <a href="/api/audit/export.csv" style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--gold);text-decoration:none;border:0.5px solid var(--gold);padding:8px 14px;border-radius:6px">
+      Export CSV →
+    </a>
+  </div>
+  <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);font-weight:300;margin:0 0 28px">
+    Every change Surface makes. Every change you make. Last 500 actions.
+  </p>
+
+  {audit.length === 0 ? (
+    <p style="font-family:var(--sans);font-size:13px;color:var(--text-muted);margin:0">No activity yet.</p>
+  ) : (
+    <ol style="list-style:none;padding:0;margin:0;display:grid;gap:6px">
+      {audit.map((a: any) => (
+        <li style="display:grid;grid-template-columns:170px 80px 1fr;gap:14px;font-family:var(--mono);font-size:11px;padding:10px 14px;background:var(--bg2);border-radius:6px;border:0.5px solid var(--border)">
+          <span style="color:var(--text-faint)">{new Date(a.ts).toLocaleString()}</span>
+          <span style={`color:${a.actor === 'owner' ? 'var(--gold)' : a.actor === 'agent' ? 'var(--teal)' : 'var(--text-muted)'};text-transform:uppercase;letter-spacing:0.1em`}>{a.actor}</span>
+          <span style="color:var(--text-mid)">
+            {a.action}
+            {a.note ? <span style="color:var(--text-faint)"> — {a.note}</span> : null}
+          </span>
+        </li>
+      ))}
+    </ol>
+  )}
+</main>
+</body>
+</html>

@@ -1,0 +1,252 @@
+---
+import Brand from '@/components/Brand.astro';
+import { getSession } from '@/lib/auth';
+import {
+  getProduct,
+  updateProduct,
+  deleteProduct,
+  getProductOverrides,
+  listVariants,
+  listAuditLog,
+} from '@/lib/products';
+
+export const prerender = false;
+const session = await getSession(Astro.cookies);
+if (!session) return Astro.redirect('/login');
+if (!session.account) return Astro.redirect('/dashboard');
+
+const productId = String(Astro.params.id ?? '');
+let banner: { kind: 'ok' | 'err'; text: string } | null = null;
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const action = String(form.get('_action') ?? 'save');
+
+  if (action === 'save') {
+    const patch = {
+      name: String(form.get('name') ?? '').trim(),
+      tagline: String(form.get('tagline') ?? '').trim(),
+      essay: String(form.get('essay') ?? '').trim(),
+      url: String(form.get('url') ?? '').trim(),
+      cta: String(form.get('cta') ?? '').trim(),
+      category: String(form.get('category') ?? '').trim(),
+      pricing: String(form.get('pricing') ?? '').trim(),
+      visible: form.get('visible') === 'on',
+      sort_order: Number(form.get('sort_order') ?? 100),
+    };
+    const r = await updateProduct(Astro.cookies, productId, patch);
+    banner = 'ok' in r
+      ? { kind: 'ok', text: 'Saved. Next refresh queued.' }
+      : { kind: 'err', text: r.error };
+  } else if (action === 'delete') {
+    const r = await deleteProduct(Astro.cookies, productId);
+    if ('ok' in r) return Astro.redirect('/dashboard?removed=1');
+    banner = { kind: 'err', text: r.error };
+  }
+}
+
+const product = await getProduct(Astro.cookies, productId);
+if (!product) return new Response('Not found', { status: 404 });
+
+const overrides = await getProductOverrides(Astro.cookies, productId);
+const variants = await listVariants(Astro.cookies, productId);
+const audit = await listAuditLog(Astro.cookies, { productId, limit: 20 });
+
+const isPaused = overrides?.paused_until && new Date(overrides.paused_until) > new Date();
+const isEditMode = overrides?.edit_mode_until && new Date(overrides.edit_mode_until) > new Date();
+const added = Astro.url.searchParams.get('added') === '1';
+
+const liveCopy = variants.find((v: any) => v.kind === 'copy' && v.status === 'live');
+const pendingCopy = variants.filter((v: any) => v.kind === 'copy' && v.status === 'pending');
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{product.name} — NOMOI Surface</title>
+</head>
+<body>
+<Brand authedEmail={session.user.email} />
+
+<main style="max-width:1080px;margin:0 auto;padding:36px 36px 80px">
+  <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">
+    <a href="/dashboard" style="text-decoration:none;color:inherit">DASHBOARD</a> · {product.key.toUpperCase()}
+  </p>
+
+  {added && (
+    <p style="background:rgba(91,191,171,0.12);border:0.5px solid var(--teal);border-radius:8px;padding:12px 18px;font-family:var(--mono);font-size:12px;color:var(--teal);margin:0 0 24px">
+      Added. Surface starts within ten minutes.
+    </p>
+  )}
+  {banner && (
+    <p style={`background:${banner.kind === 'ok' ? 'rgba(91,191,171,0.12)' : 'rgba(196,151,107,0.12)'};border:0.5px solid ${banner.kind === 'ok' ? 'var(--teal)' : 'var(--gold)'};border-radius:8px;padding:12px 18px;font-family:var(--mono);font-size:12px;color:${banner.kind === 'ok' ? 'var(--teal)' : 'var(--gold)'};margin:0 0 24px`}>
+      {banner.text}
+    </p>
+  )}
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:32px">
+    <h1 style="font-family:var(--serif);font-size:38px;font-weight:400;line-height:1.1;margin:0">{product.name}</h1>
+    <span style={`font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:${isPaused ? 'var(--gold)' : 'var(--teal)'}`}>
+      {isPaused ? 'PAUSED' : isEditMode ? 'EDIT MODE' : 'LIVE'}
+    </span>
+  </div>
+
+  <!-- Override controls strip -->
+  <section style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:12px;padding:20px;margin-bottom:32px">
+    <form method="post" action={`/api/products/${product.id}/pause`} style="display:grid;gap:6px">
+      <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--text-faint);margin:0">PAUSE</p>
+      <p style="font-family:var(--sans);font-size:12px;color:var(--text-mid);margin:0 0 4px">Stops all rotation on this product.</p>
+      <button type="submit" name="action" value={isPaused ? 'resume' : 'pause'}
+        style={`background:${isPaused ? 'var(--teal)' : 'var(--bg3)'};color:${isPaused ? '#0c0a08' : 'var(--text)'};border:0.5px solid ${isPaused ? 'var(--teal)' : 'var(--border-s)'};padding:8px 14px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;text-align:left`}>
+        {isPaused ? 'Resume →' : 'Pause this product →'}
+      </button>
+    </form>
+
+    <form method="post" action={`/api/products/${product.id}/edit-mode`} style="display:grid;gap:6px">
+      <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--text-faint);margin:0">EDIT MODE</p>
+      <p style="font-family:var(--sans);font-size:12px;color:var(--text-mid);margin:0 0 4px">You hand-edit. Agent waits.</p>
+      <button type="submit" name="action" value={isEditMode ? 'release' : 'enter'}
+        style={`background:${isEditMode ? 'var(--gold)' : 'var(--bg3)'};color:${isEditMode ? '#0c0a08' : 'var(--text)'};border:0.5px solid ${isEditMode ? 'var(--gold)' : 'var(--border-s)'};padding:8px 14px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;text-align:left`}>
+        {isEditMode ? 'Release back to agent →' : 'Take editor mode →'}
+      </button>
+    </form>
+
+    <form method="post" action={`/api/products/${product.id}/revert`} style="display:grid;gap:6px">
+      <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.12em;color:var(--text-faint);margin:0">REVERT</p>
+      <p style="font-family:var(--sans);font-size:12px;color:var(--text-mid);margin:0 0 4px">Roll back to the prior live variant.</p>
+      <button type="submit"
+        style="background:var(--bg3);color:var(--text);border:0.5px solid var(--border-s);padding:8px 14px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer;text-align:left">
+        Revert last change →
+      </button>
+    </form>
+  </section>
+
+  <!-- Manifest editor -->
+  <form method="post" style="display:grid;gap:20px;margin-bottom:48px">
+    <input type="hidden" name="_action" value="save" />
+    <h2 style="font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 0">Manifest</h2>
+
+    <label style="display:grid;gap:6px">
+      <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">NAME</span>
+      <input name="name" required value={product.name}
+        style="font-family:var(--serif);font-size:18px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+    </label>
+
+    <label style="display:grid;gap:6px">
+      <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">TAGLINE</span>
+      <input name="tagline" value={product.tagline ?? ''} maxlength="200"
+        style="font-family:var(--sans);font-size:14px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+    </label>
+
+    <label style="display:grid;gap:6px">
+      <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">ESSAY</span>
+      <textarea name="essay" rows="5" maxlength="2000"
+        style="font-family:var(--sans);font-size:14px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text);resize:vertical">{product.essay ?? ''}</textarea>
+    </label>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <label style="display:grid;gap:6px">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">URL</span>
+        <input name="url" value={product.url ?? ''}
+          style="font-family:var(--mono);font-size:13px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+      </label>
+      <label style="display:grid;gap:6px">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">CTA</span>
+        <input name="cta" value={product.cta ?? ''} maxlength="40"
+          style="font-family:var(--mono);font-size:13px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+      </label>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px">
+      <label style="display:grid;gap:6px">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">CATEGORY</span>
+        <input name="category" value={product.category ?? ''}
+          style="font-family:var(--mono);font-size:13px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+      </label>
+      <label style="display:grid;gap:6px">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">PRICING</span>
+        <input name="pricing" value={product.pricing ?? ''}
+          style="font-family:var(--mono);font-size:13px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+      </label>
+      <label style="display:grid;gap:6px">
+        <span style="font-family:var(--mono);font-size:11px;letter-spacing:0.12em;color:var(--text-mid)">SORT</span>
+        <input type="number" name="sort_order" value={product.sort_order ?? 100} min="0" max="9999"
+          style="font-family:var(--mono);font-size:13px;background:var(--bg2);border:0.5px solid var(--border-s);border-radius:8px;padding:12px 14px;color:var(--text)" />
+      </label>
+    </div>
+
+    <label style="display:flex;gap:10px;align-items:center;font-family:var(--mono);font-size:12px;color:var(--text-mid)">
+      <input type="checkbox" name="visible" checked={product.visible} />
+      <span>Visible on public showcase</span>
+    </label>
+
+    <div style="display:flex;gap:12px;margin-top:8px;justify-content:space-between;align-items:center">
+      <button type="submit" style="background:var(--gold);color:#0c0a08;padding:12px 28px;border-radius:8px;border:none;font-family:var(--mono);font-size:13px;font-weight:500;cursor:pointer">
+        Save changes →
+      </button>
+      <button type="submit" name="_action" value="delete"
+        onclick="return confirm('Remove this product? Audit history is kept.')"
+        style="background:transparent;color:var(--text-faint);padding:12px 18px;border-radius:8px;border:0.5px solid var(--border-s);font-family:var(--mono);font-size:11px;cursor:pointer">
+        Remove product
+      </button>
+    </div>
+  </form>
+
+  <!-- Variant pool -->
+  <section style="margin-bottom:48px">
+    <h2 style="font-family:var(--serif);font-size:24px;font-weight:400;margin:0 0 14px">Copy variants</h2>
+    {!liveCopy && pendingCopy.length === 0 && (
+      <p style="font-family:var(--sans);font-size:13px;color:var(--text-muted);margin:0">Nothing proposed yet. Next refresh runs within ten minutes.</p>
+    )}
+    {liveCopy && (
+      <article style="background:var(--bg2);border:0.5px solid var(--teal);border-radius:12px;padding:20px 24px;margin-bottom:12px">
+        <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--teal);margin:0 0 8px">LIVE · {(liveCopy.generation_provider ?? 'agent').toString()}</p>
+        <p style="font-family:var(--serif);font-size:18px;margin:0 0 6px">{liveCopy.payload?.tagline}</p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);margin:0 0 8px">{liveCopy.payload?.essay}</p>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--gold);margin:0">{liveCopy.payload?.cta}</p>
+        <form method="post" action={`/api/variants/${liveCopy.id}/retire`} style="display:inline-block;margin-top:12px">
+          <button type="submit" style="background:transparent;color:var(--text-faint);border:0.5px solid var(--border-s);padding:6px 12px;border-radius:6px;font-family:var(--mono);font-size:10px;cursor:pointer">Retire this</button>
+        </form>
+      </article>
+    )}
+    {pendingCopy.map((v: any) => (
+      <article style="background:var(--bg2);border:0.5px solid var(--border-s);border-radius:12px;padding:20px 24px;margin-bottom:12px">
+        <p style="font-family:var(--mono);font-size:10px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 8px">PENDING · {new Date(v.created_at).toLocaleString()}</p>
+        <p style="font-family:var(--serif);font-size:16px;margin:0 0 6px">{v.payload?.tagline}</p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);margin:0 0 8px">{v.payload?.essay}</p>
+        <p style="font-family:var(--mono);font-size:11px;color:var(--gold);margin:0">{v.payload?.cta}</p>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <form method="post" action={`/api/variants/${v.id}/promote`}>
+            <button type="submit" style="background:var(--teal);color:#0c0a08;padding:6px 14px;border-radius:6px;border:none;font-family:var(--mono);font-size:11px;cursor:pointer">Promote →</button>
+          </form>
+          <form method="post" action={`/api/variants/${v.id}/reject`} style="display:flex;gap:6px">
+            <input name="reason" placeholder="why?" required maxlength="200"
+              style="background:var(--bg3);border:0.5px solid var(--border-s);border-radius:6px;padding:6px 10px;font-family:var(--mono);font-size:11px;color:var(--text);width:160px" />
+            <button type="submit" style="background:transparent;color:var(--gold);border:0.5px solid var(--gold);padding:6px 12px;border-radius:6px;font-family:var(--mono);font-size:11px;cursor:pointer">Reject</button>
+          </form>
+        </div>
+      </article>
+    ))}
+  </section>
+
+  <!-- Audit log -->
+  <section>
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:14px">
+      <h2 style="font-family:var(--serif);font-size:24px;font-weight:400;margin:0">Recent activity</h2>
+      <a href="/dashboard/audit" style="font-family:var(--mono);font-size:11px;color:var(--gold);text-decoration:none">Full log →</a>
+    </div>
+    {audit.length === 0 && <p style="font-family:var(--sans);font-size:13px;color:var(--text-muted);margin:0">Nothing yet.</p>}
+    <ol style="list-style:none;padding:0;margin:0;display:grid;gap:8px">
+      {audit.map((a: any) => (
+        <li style="display:grid;grid-template-columns:140px 100px 1fr;gap:14px;font-family:var(--mono);font-size:11px;padding:10px 12px;background:var(--bg2);border-radius:6px">
+          <span style="color:var(--text-faint)">{new Date(a.ts).toLocaleString()}</span>
+          <span style={`color:${a.actor === 'owner' ? 'var(--gold)' : a.actor === 'agent' ? 'var(--teal)' : 'var(--text-muted)'};text-transform:uppercase;letter-spacing:0.1em`}>{a.actor}</span>
+          <span style="color:var(--text-mid)">{a.action}{a.note ? ` — ${a.note}` : ''}</span>
+        </li>
+      ))}
+    </ol>
+  </section>
+</main>
+</body>
+</html>

@@ -4,54 +4,180 @@ import { getSession } from '@/lib/auth';
 
 export const prerender = false;
 const session = await getSession(Astro.cookies);
+const heroVideoUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos/surface-v3.mp4';
+const heroPosterUrl = 'https://umodapwphcxtiijizqll.supabase.co/storage/v1/object/public/surface-videos/surface-v3.jpg';
 ---
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>NOMOI Surface — keeps your brand pages alive</title>
-<meta name="description" content="A manifest-driven brand-as-a-service. You add your products. We keep the videos, copy, and CapCut kits refreshing as your scope changes." />
+<title>A landing page that updates itself — NOMOI Surface</title>
+<meta name="description" content="Send your manifest. By tomorrow morning your page is rotating fresh copy, fresh video, fresh layout. You're always in charge." />
 </head>
 <body>
 <Brand authedEmail={session?.user.email ?? null} />
 
-<main style="max-width:980px;margin:0 auto;padding:80px 36px 80px">
-  <p style="font-family:var(--mono);font-size:12px;letter-spacing:0.16em;color:var(--gold);margin:0 0 24px">SURFACE · BY NOMOI</p>
-  <h1 style="font-family:var(--serif);font-size:64px;font-weight:400;line-height:1.05;letter-spacing:-0.02em;margin:0 0 28px;max-width:880px">
-    Your landing page is doing nothing. <em style="font-style:normal;color:var(--gold)">Mine has eleven product cards, each with a video that auto-updates when scope changes.</em>
-  </h1>
-  <p style="font-family:var(--sans);font-size:18px;line-height:1.7;color:var(--text-mid);max-width:680px;font-weight:300;margin:0 0 40px">
-    Surface is the system that keeps NOMOI's eleven product cards alive — videos, copy, CapCut kits, weekly bawa rotation. We're opening it up. Add your products, we keep the surfaces refreshing.
-  </p>
+<main>
+  <!-- HERO -->
+  <section style="max-width:1080px;margin:0 auto;padding:72px 36px 48px">
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 24px">SURFACE · BY NOMOI</p>
 
-  <div style="display:flex;gap:14px;margin-bottom:80px">
-    <a href="/login" style="background:var(--gold);color:#0c0a08;padding:14px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.02em">
-      Try the dashboard →
-    </a>
-    <a href="https://nomoi.ai" target="_blank" rel="noopener" style="border:0.5px solid var(--border-s);color:var(--text-mid);padding:14px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px">
-      See it on nomoi.ai
-    </a>
-  </div>
+    <h1 style="font-family:var(--serif);font-size:72px;font-weight:400;line-height:1.02;letter-spacing:-0.025em;margin:0 0 28px;max-width:900px">
+      A landing page that <em style="font-style:italic;color:var(--gold)">updates itself</em>.
+    </h1>
 
-  <section style="display:grid;grid-template-columns:repeat(3, 1fr);gap:32px;margin-bottom:80px">
-    <div>
-      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">SOLO · $99/QTR</p>
-      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 3 products. One refresh credit per product per month.</p>
+    <p style="font-family:var(--sans);font-size:20px;line-height:1.55;color:var(--text-mid);max-width:680px;font-weight:300;margin:0 0 40px">
+      Copy, video, layout, motion — fresh every week. Reverts itself when something hurts your numbers. One manifest from you. Everything else from us.
+    </p>
+
+    <div style="display:flex;gap:14px;margin-bottom:18px">
+      <a href="/login" style="background:var(--gold);color:#0c0a08;padding:16px 30px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.02em">
+        Start — first refresh by tomorrow →
+      </a>
+      <a href="https://nomoi.ai" target="_blank" rel="noopener" style="border:0.5px solid var(--border-s);color:var(--text-mid);padding:16px 28px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:13px">
+        See it live on nomoi.ai
+      </a>
     </div>
-    <div>
-      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">OPERATOR · $299/QTR</p>
-      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 10 products. Unlimited refreshes. Custom subdomain.</p>
+
+    <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:0;letter-spacing:0.04em">
+      No card needed. Set up in one short call. You're always in charge.
+    </p>
+  </section>
+
+  <!-- DEMO VIDEO -->
+  <section style="max-width:1080px;margin:0 auto;padding:0 36px 80px">
+    <div style="border:0.5px solid var(--border-s);border-radius:14px;overflow:hidden;background:var(--bg2);aspect-ratio:16/9">
+      <video autoplay muted playsinline loop preload="metadata"
+        poster={heroPosterUrl}
+        aria-label="A page that updates itself"
+        style="width:100%;height:100%;object-fit:cover;display:block;background:var(--bg2)">
+        <source src={heroVideoUrl} type="video/mp4" />
+      </video>
     </div>
-    <div>
-      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">STUDIO · $999/QTR</p>
-      <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Up to 50 products. Custom palette and type. Custom domain.</p>
+    <p style="font-family:var(--mono);font-size:11px;color:var(--text-faint);margin:14px 0 0;text-align:center;letter-spacing:0.04em">
+      The cards above are real. Refresh nomoi.ai tomorrow — at least one will have changed.
+    </p>
+  </section>
+
+  <!-- WHAT YOU GET -->
+  <section style="max-width:1080px;margin:0 auto;padding:0 36px 80px">
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">WHAT SHOWS UP ON YOUR SITE</p>
+    <h2 style="font-family:var(--serif);font-size:36px;font-weight:400;line-height:1.1;margin:0 0 40px;max-width:680px">
+      Your page goes from <em style="font-style:italic;color:var(--text-faint)">frozen</em> to <em style="font-style:italic;color:var(--gold)">moving</em>.
+    </h2>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:32px">
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">COPY</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Fresh headline, sub, and call to action. Tightened against what's converting. Your voice, not generic.</p>
+      </div>
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">VIDEO</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">A short hero loop that swaps weekly. Your palette, your type, your product. Never the same week twice.</p>
+      </div>
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">LAYOUT</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">The page rearranges itself — what's working moves up, what isn't drops back. Same brand the whole time.</p>
+      </div>
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">MOTION</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Tiny rhythms that match your product's feel. Calm, sharp, quick — whichever fits. Locked the moment it makes your numbers worse.</p>
+      </div>
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">EDITOR KIT</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Title cards, lower thirds, end frames, scene plan. Ready every week if you want to record your own.</p>
+      </div>
+      <div>
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--teal);margin:0 0 12px">AUTO REVERT</p>
+        <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:0">Anything that hurts your page rolls back on its own. You don't have to watch.</p>
+      </div>
     </div>
   </section>
 
-  <p style="font-family:var(--serif);font-style:italic;font-size:18px;color:var(--text-muted);max-width:680px;line-height:1.6">
-    First ten customers grandfathered at half the launch price, forever.
-  </p>
+  <!-- YOU'RE IN CHARGE -->
+  <section style="background:linear-gradient(180deg,var(--bg) 0%,rgba(196,151,107,0.05) 100%);padding:72px 0 80px">
+    <div style="max-width:840px;margin:0 auto;padding:0 36px">
+      <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">ALWAYS</p>
+      <h2 style="font-family:var(--serif);font-size:48px;font-weight:400;line-height:1.05;margin:0 0 28px">
+        Your page. <em style="font-style:italic;color:var(--gold)">Your call.</em>
+      </h2>
+      <p style="font-family:var(--sans);font-size:17px;color:var(--text-mid);line-height:1.65;font-weight:300;margin:0 0 28px">
+        One click pauses everything. One click rolls anything back. Hand-edit any product and we step out of the way. Every change we make and every change you make is in one timeline you can export.
+      </p>
+      <p style="font-family:var(--sans);font-size:14px;color:var(--text-muted);font-weight:300;margin:0">
+        We never publish anything that hurts your numbers. If a refresh slows your page or drops accessibility, it reverts itself before anyone sees it.
+      </p>
+    </div>
+  </section>
+
+  <!-- ADD A PRODUCT IN 60 SECONDS -->
+  <section style="max-width:1080px;margin:0 auto;padding:80px 36px">
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">FROM ZERO TO LIVE</p>
+    <h2 style="font-family:var(--serif);font-size:36px;font-weight:400;line-height:1.1;margin:0 0 40px">
+      Three steps. Tomorrow morning your page is alive.
+    </h2>
+    <ol style="list-style:none;padding:0;margin:0;display:grid;gap:18px;counter-reset:step">
+      <li style="display:grid;grid-template-columns:48px 1fr;gap:20px;padding:18px 0;border-top:0.5px solid var(--border)">
+        <span style="font-family:var(--serif);font-size:32px;color:var(--gold);font-style:italic">1</span>
+        <div>
+          <p style="font-family:var(--serif);font-size:22px;margin:0 0 6px">Sign in.</p>
+          <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.65;font-weight:300;margin:0">Magic link to your email. No password.</p>
+        </div>
+      </li>
+      <li style="display:grid;grid-template-columns:48px 1fr;gap:20px;padding:18px 0;border-top:0.5px solid var(--border)">
+        <span style="font-family:var(--serif);font-size:32px;color:var(--gold);font-style:italic">2</span>
+        <div>
+          <p style="font-family:var(--serif);font-size:22px;margin:0 0 6px">Add your product.</p>
+          <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.65;font-weight:300;margin:0">Name, tagline, URL. Sixty seconds.</p>
+        </div>
+      </li>
+      <li style="display:grid;grid-template-columns:48px 1fr;gap:20px;padding:18px 0;border-top:0.5px solid var(--border);border-bottom:0.5px solid var(--border)">
+        <span style="font-family:var(--serif);font-size:32px;color:var(--gold);font-style:italic">3</span>
+        <div>
+          <p style="font-family:var(--serif);font-size:22px;margin:0 0 6px">Walk away.</p>
+          <p style="font-family:var(--sans);font-size:14px;color:var(--text-mid);line-height:1.65;font-weight:300;margin:0">First refresh runs within ten minutes. Next morning the page has shifted.</p>
+        </div>
+      </li>
+    </ol>
+  </section>
+
+  <!-- PRICING -->
+  <section style="max-width:1080px;margin:0 auto;padding:40px 36px 96px">
+    <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 14px">PRICING</p>
+    <h2 style="font-family:var(--serif);font-size:36px;font-weight:400;line-height:1.1;margin:0 0 8px">
+      Quarterly. Cancel anytime. Grandfathered forever for early customers.
+    </h2>
+    <p style="font-family:var(--sans);font-size:14px;color:var(--text-muted);font-weight:300;margin:0 0 40px">First ten accounts pay half the launch price for as long as they stay.</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px">
+      <article style="border:0.5px solid var(--border-s);border-radius:14px;padding:32px 28px;background:var(--bg2)">
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">SOLO</p>
+        <p style="font-family:var(--serif);font-size:38px;color:var(--text);margin:0 0 4px">$99<span style="font-size:14px;color:var(--text-muted);font-family:var(--mono)"> / quarter</span></p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:18px 0 0">Up to 3 products. Tomorrow you ship.</p>
+      </article>
+      <article style="border:0.5px solid var(--gold);border-radius:14px;padding:32px 28px;background:linear-gradient(180deg,var(--bg2) 0%,rgba(196,151,107,0.06) 100%)">
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--gold);margin:0 0 12px">OPERATOR</p>
+        <p style="font-family:var(--serif);font-size:38px;color:var(--text);margin:0 0 4px">$299<span style="font-size:14px;color:var(--text-muted);font-family:var(--mono)"> / quarter</span></p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:18px 0 0">Up to 10 products. Your subdomain. Unlimited refreshes.</p>
+      </article>
+      <article style="border:0.5px solid var(--border-s);border-radius:14px;padding:32px 28px;background:var(--bg2)">
+        <p style="font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--text-faint);margin:0 0 12px">STUDIO</p>
+        <p style="font-family:var(--serif);font-size:38px;color:var(--text);margin:0 0 4px">$999<span style="font-size:14px;color:var(--text-muted);font-family:var(--mono)"> / quarter</span></p>
+        <p style="font-family:var(--sans);font-size:13px;color:var(--text-mid);line-height:1.7;font-weight:300;margin:18px 0 0">Up to 50 products. Your palette and type. Your domain.</p>
+      </article>
+    </div>
+
+    <div style="text-align:center;margin-top:56px">
+      <a href="/login" style="background:var(--gold);color:#0c0a08;padding:18px 36px;border-radius:8px;text-decoration:none;font-family:var(--mono);font-size:14px;font-weight:500;letter-spacing:0.02em;display:inline-block">
+        Start now — first refresh by tomorrow →
+      </a>
+    </div>
+  </section>
 </main>
+
+<footer style="border-top:0.5px solid var(--border);padding:28px 36px;text-align:center;font-family:var(--mono);font-size:11px;color:var(--text-faint);letter-spacing:0.04em">
+  NOMOI · A landing page that updates itself.
+</footer>
 </body>
 </html>
