@@ -1,6 +1,7 @@
 ---
 import Brand from '@/components/Brand.astro';
 import BeforeAfter from '@/components/BeforeAfter.astro';
+import ExplodeHero from '@/components/ExplodeHero.astro';
 import { getSession } from '@/lib/auth';
 
 export const prerender = false;
@@ -18,9 +19,14 @@ const afterUrl = 'https://nomoi.ai/';
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>A landing page that updates itself — NOMOI Surface</title>
 <meta name="description" content="Send your manifest. By tomorrow morning your page is rotating fresh copy, fresh video, fresh layout. You're always in charge." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;900&display=swap" rel="stylesheet" />
 </head>
 <body>
 <Brand authedEmail={session?.user.email ?? null} />
+
+<ExplodeHero />
 
 <main>
   <!-- HERO -->

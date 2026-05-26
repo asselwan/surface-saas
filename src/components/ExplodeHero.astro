@@ -1,0 +1,205 @@
+---
+// NOMOI brand-kit · Explode parallax hero — surface.nomoi.ai
+// First-paint hero, scroll-driven diorama, dark + warm gold + DM Mono + Instrument Serif + Inter 900.
+// Fonts (DM Mono · Instrument Serif · Inter) are loaded from the page <head>.
+---
+<style is:global>
+  .explode{position:relative;height:320vh;margin:0 calc(50% - 50vw) 4rem;--explode-progress:0;--ex-tx:0px;--ex-ty:0px;--bg:#0c0a08;--bg2:#161411;--text:#f4f1ea;--text-mid:#c8c2b6;--text-muted:#9a958c;--text-faint:#6d685f;--gold:#c4976b;--gold-bright:#d4aa7e;--teal:#5bbfab;--ex-mono:'DM Mono',monospace;--ex-serif:'Instrument Serif',serif;--ex-wordmark:'Inter',sans-serif}
+  .explode-stage{position:sticky;top:0;height:100vh;overflow:hidden;background:
+    radial-gradient(circle at 50% 50%,rgba(196,151,107,.18) 0%,rgba(196,151,107,.04) 24%,transparent 48%),
+    radial-gradient(circle at 18% 14%,rgba(91,191,171,.1),transparent 40%),
+    radial-gradient(circle at 84% 82%,rgba(212,170,126,.08),transparent 38%),
+    linear-gradient(180deg,#0c0a08,#161411 60%,#0c0a08);
+    border-top:.5px solid rgba(196,151,107,.22);border-bottom:.5px solid rgba(91,191,171,.18)}
+  .explode-stars{position:absolute;inset:-12% -8%;background:
+    radial-gradient(1.2px 1.2px at 12% 18%,rgba(244,241,234,.45),transparent 60%),
+    radial-gradient(1px 1px at 76% 24%,rgba(212,170,126,.55),transparent 60%),
+    radial-gradient(1.4px 1.4px at 42% 62%,rgba(244,241,234,.32),transparent 60%),
+    radial-gradient(1px 1px at 24% 88%,rgba(91,191,171,.55),transparent 60%),
+    radial-gradient(1px 1px at 88% 72%,rgba(244,241,234,.4),transparent 60%),
+    radial-gradient(1.2px 1.2px at 64% 14%,rgba(196,151,107,.5),transparent 60%),
+    radial-gradient(1px 1px at 8% 54%,rgba(244,241,234,.35),transparent 60%);
+    transform:translate3d(var(--ex-tx),var(--ex-ty),0);pointer-events:none;opacity:.78;will-change:transform}
+  .explode-rings{position:absolute;left:50%;top:50%;width:0;height:0;pointer-events:none}
+  .explode-rings span{position:absolute;left:50%;top:50%;border:.5px solid rgba(212,170,126,.18);border-radius:50%;transform:translate(-50%,-50%);animation:ex-ring-pulse 5.4s ease-in-out infinite}
+  .explode-rings span:nth-child(1){width:240px;height:240px;animation-delay:0s;border-color:rgba(212,170,126,.34)}
+  .explode-rings span:nth-child(2){width:440px;height:440px;animation-delay:-.7s;border-color:rgba(91,191,171,.18)}
+  .explode-rings span:nth-child(3){width:680px;height:680px;animation-delay:-1.4s;border-color:rgba(212,170,126,.12)}
+  .explode-rings span:nth-child(4){width:980px;height:980px;animation-delay:-2.1s;border-color:rgba(244,241,234,.05)}
+  @keyframes ex-ring-pulse{0%,100%{opacity:.45;filter:blur(0)}50%{opacity:1;filter:blur(.2px)}}
+  .explode-head{position:absolute;left:50%;top:8%;transform:translateX(-50%);text-align:center;max-width:780px;padding:0 1.25rem;z-index:3}
+  .explode-kicker{display:inline-block;font-family:var(--ex-mono);font-size:10px;letter-spacing:.24em;color:var(--gold);text-transform:uppercase;padding:6px 12px;border:.5px solid rgba(212,170,126,.4);border-radius:18px;background:rgba(12,10,8,.6)}
+  .explode-title{font-family:var(--ex-serif);font-weight:400;font-size:clamp(32px,5.4vw,68px);line-height:1.02;margin:1rem 0 .5rem;letter-spacing:-.01em;color:var(--text)}
+  .explode-title em{font-style:italic;color:var(--gold)}
+  .explode-sub{margin:0;font-family:var(--ex-mono);font-size:11.5px;letter-spacing:.18em;color:var(--text-faint);text-transform:uppercase}
+  .explode-cta{display:inline-flex;gap:12px;margin-top:1.5rem;flex-wrap:wrap;justify-content:center}
+  .explode-cta a{font-family:var(--ex-mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;padding:11px 18px;border-radius:24px;text-decoration:none;border:.5px solid;transition:transform .2s ease,box-shadow .2s ease,background .2s ease,color .2s ease}
+  .explode-cta a.bp{background:var(--gold);color:#0c0a08;border-color:var(--gold)}
+  .explode-cta a.bp:hover{background:var(--gold-bright);transform:translateY(-1px);box-shadow:0 8px 28px rgba(196,151,107,.4)}
+  .explode-cta a.bo{background:transparent;color:var(--text);border-color:rgba(244,241,234,.32)}
+  .explode-cta a.bo:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+  .explode-core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(calc(1 - var(--explode-progress) * .14));z-index:2;display:grid;place-items:center;width:200px;height:200px;border:.5px solid rgba(196,151,107,.6);border-radius:50%;background:radial-gradient(circle at 50% 50%,rgba(196,151,107,.34),rgba(12,10,8,.96) 70%);box-shadow:0 0 80px rgba(196,151,107,.32),inset 0 0 30px rgba(196,151,107,.16);transition:transform .18s ease}
+  .explode-core-pulse{position:absolute;inset:-2px;border-radius:50%;border:.5px solid rgba(212,170,126,.5);animation:ex-core-pulse 3.4s ease-out infinite}
+  .explode-core-pulse.two{animation-delay:-1.1s}
+  .explode-core-pulse.three{animation-delay:-2.2s}
+  @keyframes ex-core-pulse{0%{transform:scale(.96);opacity:.7}80%{opacity:.1}100%{transform:scale(1.6);opacity:0}}
+  .explode-core-mark{font-family:var(--ex-wordmark);font-weight:900;font-size:48px;letter-spacing:.04em;color:var(--text);text-shadow:0 0 24px rgba(196,151,107,.45)}
+  .explode-core-sub{margin-top:8px;font-family:var(--ex-mono);font-size:8px;letter-spacing:.24em;color:var(--gold-bright)}
+  .explode-lines{position:absolute;left:50%;top:50%;width:min(90vw,1000px);height:min(90vh,1000px);transform:translate(-50%,-50%);overflow:visible;z-index:1;opacity:calc(var(--explode-progress) * 1)}
+  .explode-lines line{stroke:rgba(212,170,126,.36);stroke-width:.5;stroke-dasharray:4 6;animation:ex-line-walk 6s linear infinite}
+  @keyframes ex-line-walk{to{stroke-dashoffset:-40}}
+  .orbit{position:absolute;left:50%;top:50%;width:clamp(160px,15vw,210px);text-decoration:none;z-index:4;transform:translate(-50%,-50%) translate3d(calc(var(--ox) * var(--explode-progress)),calc(var(--oy) * var(--explode-progress)),0) rotate(calc((var(--explode-progress) - 1) * 6deg));opacity:calc(.35 + var(--explode-progress) * .65);transition:filter .25s ease}
+  .orbit:hover{filter:brightness(1.18)}
+  .orbit:hover .orbit-frame{border-color:rgba(212,170,126,.85);box-shadow:0 28px 80px rgba(0,0,0,.6),0 0 60px rgba(196,151,107,.22)}
+  .orbit-frame{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;border:.5px solid rgba(244,241,234,.14);background:linear-gradient(135deg,#0c0a08,#161411);box-shadow:0 22px 60px rgba(0,0,0,.5);transition:border-color .25s ease,box-shadow .25s ease;display:flex;align-items:center;justify-content:center;padding:14px}
+  .orbit-frame::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(12,10,8,.7));pointer-events:none}
+  .orbit-glyph{font-family:var(--ex-mono),'Segoe UI Symbol',system-ui,monospace;font-size:36px;color:var(--gold);line-height:1}
+  .orbit-tick{font-family:var(--ex-mono);font-size:9px;letter-spacing:.18em;color:var(--text-muted);text-transform:uppercase;margin-top:6px}
+  .orbit-meta{display:flex;flex-direction:column;gap:2px;padding:8px 4px 0;text-align:left}
+  .orbit-name{font-family:var(--ex-serif);font-size:15px;line-height:1.05;color:var(--text)}
+  .orbit-role{font-family:var(--ex-mono);font-size:9px;letter-spacing:.12em;color:var(--gold);text-transform:uppercase}
+  .explode-foot{position:absolute;left:0;right:0;bottom:18px;display:flex;justify-content:center;gap:32px;font-family:var(--ex-mono);font-size:9.5px;letter-spacing:.18em;color:var(--text-faint);text-transform:uppercase;z-index:5;padding:0 1.25rem;flex-wrap:wrap}
+  .explode-foot-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal);margin-right:8px;animation:ex-pulse 1.6s infinite;vertical-align:middle}
+  @keyframes ex-pulse{0%,100%{opacity:.4}50%{opacity:1}}
+  @media (max-width: 1024px){
+    .explode{height:260vh}
+    .orbit{width:clamp(130px,28vw,180px)}
+    .explode-title{font-size:clamp(28px,7vw,42px)}
+    .explode-rings span:nth-child(3),.explode-rings span:nth-child(4){display:none}
+  }
+  @media (max-width: 640px){
+    .explode{height:auto;margin:3rem 0}
+    .explode-stage{position:relative;height:auto;padding:3rem 1.25rem 2rem;overflow:visible;display:flex;flex-direction:column;align-items:center;gap:1.5rem}
+    .explode-head{position:relative;top:auto;left:auto;transform:none}
+    .explode-core{position:relative;left:auto;top:auto;transform:scale(.85)}
+    .explode-rings,.explode-lines{display:none}
+    .orbit{position:relative;left:auto;top:auto;transform:none;width:100%;max-width:380px;opacity:1}
+    .explode-foot{position:relative;bottom:auto;flex-direction:column;gap:8px;text-align:center}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .explode-rings span,.explode-core-pulse,.orbit-frame img,.explode-lines line{animation:none}
+    .orbit{transform:translate(-50%,-50%) translate3d(var(--ox),var(--oy),0);opacity:1}
+  }
+</style>
+
+<section class="explode" aria-label="A landing page that updates itself" data-explode>
+  <div class="explode-stage">
+    <div class="explode-stars" aria-hidden="true"></div>
+    <div class="explode-rings" aria-hidden="true">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="explode-head">
+      <span class="explode-kicker">surface · by nomoi · live</span>
+      <h1 class="explode-title">A landing page that <em>updates itself</em></h1>
+      <p class="explode-sub">copy · video · layout · motion · refreshed weekly</p>
+      <div class="explode-cta">
+        <a href="/start" class="bp">Paste your URL</a>
+        <a href="#how" class="bo">See it move</a>
+      </div>
+    </div>
+    <div class="explode-core">
+      <span class="explode-core-pulse"></span>
+      <span class="explode-core-pulse two"></span>
+      <span class="explode-core-pulse three"></span>
+      <span class="explode-core-mark">S</span>
+      <span class="explode-core-sub">SURFACE ENGINE</span>
+    </div>
+    <svg class="explode-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true">
+      <line x1="500" y1="500" x2="180" y2="280"></line>
+      <line x1="500" y1="500" x2="500" y2="180"></line>
+      <line x1="500" y1="500" x2="820" y2="280"></line>
+      <line x1="500" y1="500" x2="860" y2="500"></line>
+      <line x1="500" y1="500" x2="820" y2="780"></line>
+      <line x1="500" y1="500" x2="500" y2="860"></line>
+    </svg>
+
+    <a class="orbit" href="#copy" style="--ox:-32vw;--oy:-22vh;--orbit-delay:0s" data-cta="hero_orbit_copy">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">¶</div><span class="orbit-tick" style="display:block">draft 042</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Copy refresh</span>
+        <span class="orbit-role">headline · sub · cta</span>
+      </span>
+    </a>
+
+    <a class="orbit" href="#video" style="--ox:0vw;--oy:-32vh;--orbit-delay:0.06s" data-cta="hero_orbit_video">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">▶</div><span class="orbit-tick" style="display:block">loop 7s</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Hero video</span>
+        <span class="orbit-role">veo · weekly swap</span>
+      </span>
+    </a>
+
+    <a class="orbit" href="#layout" style="--ox:32vw;--oy:-22vh;--orbit-delay:0.12s" data-cta="hero_orbit_layout">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">⌗</div><span class="orbit-tick" style="display:block">rerank</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Layout shift</span>
+        <span class="orbit-role">winners move up</span>
+      </span>
+    </a>
+
+    <a class="orbit" href="#motion" style="--ox:38vw;--oy:6vh;--orbit-delay:0.18s" data-cta="hero_orbit_motion">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">~</div><span class="orbit-tick" style="display:block">tuned</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Motion grammar</span>
+        <span class="orbit-role">calm · sharp · quick</span>
+      </span>
+    </a>
+
+    <a class="orbit" href="#revert" style="--ox:32vw;--oy:30vh;--orbit-delay:0.24s" data-cta="hero_orbit_revert">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">↺</div><span class="orbit-tick" style="display:block">auto</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Auto revert</span>
+        <span class="orbit-role">rolls back losses</span>
+      </span>
+    </a>
+
+    <a class="orbit" href="#kit" style="--ox:-32vw;--oy:30vh;--orbit-delay:0.36s" data-cta="hero_orbit_kit">
+      <span class="orbit-frame">
+        <span style="display:block;text-align:center"><span class="orbit-glyph" style="display:block">◧</div><span class="orbit-tick" style="display:block">scene</div></div>
+      </span>
+      <span class="orbit-meta">
+        <span class="orbit-name">Editor kit</span>
+        <span class="orbit-role">title · lower third · end</span>
+      </span>
+    </a>
+
+    <div class="explode-foot">
+      <span><span class="explode-foot-dot"></span>engine online</span>
+      <span>no card · one manifest</span>
+      <span>first refresh by tomorrow</span>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    var ex = document.querySelector('[data-explode]');
+    if (!ex) return;
+    var stars = ex.querySelector('.explode-stars');
+    function sync() {
+      var r = ex.getBoundingClientRect();
+      var total = Math.max(1, r.height - window.innerHeight);
+      var raw = Math.max(0, Math.min(1, -r.top / total));
+      var eased = raw < .12 ? 0 : raw > .92 ? 1 : (raw - .12) / .8;
+      eased = eased * eased * (3 - 2 * eased);
+      ex.style.setProperty('--explode-progress', eased.toFixed(3));
+      if (stars) {
+        ex.style.setProperty('--ex-tx', ((raw - .5) * -36).toFixed(2) + 'px');
+        ex.style.setProperty('--ex-ty', ((raw - .5) * -28).toFixed(2) + 'px');
+      }
+    }
+    window.addEventListener('scroll', sync, { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+    sync();
+  })();
+</script>
